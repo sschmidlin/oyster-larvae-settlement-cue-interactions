@@ -48,10 +48,16 @@ table(data[,'settled_30hrs']) # just to see how many larvae settled
 # shell: sterilized vs. untreated
 # conspecific cue: present vs. absent
 # predator cue: present vs. absent
-
+data['shell'] <- data['Cue']
+levels(data$shell) <- c(rep('untreated', 3), rep('sterilized', 4))
+data['conspecific_cue'] <- data['Cue']
+levels(data$conspecific_cue) <- c('absent', 'present', rep('absent', 2), rep('present', 2), 'absent')
+data['predator_cue'] <- data['Cue']
+levels(data$predator_cue) <- c(rep('absent', 2), 'present', rep('absent', 2), rep('present', 2))
+table(data[, c('shell', 'conspecific_cue', 'predator_cue')]) # check if experiment was balanced
 
 # 3. Make a statistical model
-model <- glmer(settled_30hrs ~ Cue + (1 | age) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data, family = binomial)
+model <- glmer(settled_30hrs ~ shell * conspecific_cue * predator_cue + (1 | age) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data, family = binomial)
 
 # 4. Does data fulfill model assumptions?
 plot(model)
