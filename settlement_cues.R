@@ -8,6 +8,10 @@ data <- read.csv2(file="Settlement_cue_data1-All_data.csv", check.names=FALSE, s
 data[, 'Start_date'] <- as.Date(data[, 'Start_date'])
 data[, 'Fertilization_date'] <- as.Date(data[, 'Fertilization_date'])
 
+# Convert Cue to factor
+data[, 'Cue'] <- as.factor(data[, 'Cue'])
+levels(data[,'Cue'])
+
 # Calculate ages of larvae
 data['age'] <- NA
 for(i in 1:nrow(data)){
@@ -15,7 +19,7 @@ for(i in 1:nrow(data)){
 }
 
 # Does settlement differ between treatments?
-# Type of model: generalized mixed-effect model; response variable is binary -> logistic regression
+# Type of model: generalized linear mixed-effect model; response variable is binary -> logistic regression
 # Binary response variable: calculate per larva and save as "settlement"
 # Predictor variable: Cue
 # Random effect variables: Crab, age, Tray Number, Well
@@ -30,3 +34,4 @@ for(i in 1:nrow(data)){
 
 # 5. Visualize model predictions
 
+# 6. Power analysis
