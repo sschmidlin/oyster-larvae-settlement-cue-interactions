@@ -26,8 +26,8 @@ for(i in 1:nrow(data)){
 # Does settlement differ between treatments?
 # Type of model: generalized linear mixed-effect model; response variable is binary -> logistic regression
 # Binary response variable: calculate per larva and save as "settlement"
-# Predictor variable: Cue
-# Random effect variables: Crab, age, Tray Number, Well
+# Predictor variables: shell, conspecific_cue, predator_cue
+# Random effect variables: Crab, age, Tray_Number, Well
 
 # 1. Calculate response variable from input data
 # Quick fix for the moment: concentrate on data after 30 hours
