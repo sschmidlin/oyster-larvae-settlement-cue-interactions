@@ -58,12 +58,28 @@ table(data[, c('shell', 'conspecific_cue', 'predator_cue')]) # check if experime
 
 # 3. Make a statistical model
 model <- glmer(settled_30hrs ~ shell * conspecific_cue * predator_cue + (1 | age) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data, family = binomial)
+# Experiment was unbalanced, lacking data for untreated shells with predator cues present -> repeat analysis with only sterilized shells
+data2 <- data[data[, 'shell'] %in% 'sterilized', ]
+table(data2[, c('conspecific_cue', 'predator_cue')])
+model2 <- glmer(settled_30hrs ~ conspecific_cue * predator_cue + (1 | age) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data, family = binomial)
+# Repeat analysis once more without predator cues
+data3 <- data[data[, 'predator_cue'] %in% 'absent', ]
+table(data3[, c('shell', 'conspecific_cue')])
+model3 <- glmer(settled_30hrs ~ shell * conspecific_cue + (1 | age) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data, family = binomial)
+# Model with all data, but dropping unbalanced factor combinations
+model4 <- glmer(settled_30hrs ~ shell + conspecific_cue + predator_cue + shell:conspecific_cue + conspecific_cue:predator_cue + (1 | age) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data, family = binomial)
 
 # 4. Does data fulfill model assumptions?
 plot(model)
+plot(model2)
+plot(model3)
+plot(model4)
 
 # 5. Statistical test
 summary(model)
+summary(model2)
+summary(model3)
+summary(model4)
 
 # 6. Visualize model predictions
 # Below there is some code that I used for another project, maybe it's useful as a source of inspiration
