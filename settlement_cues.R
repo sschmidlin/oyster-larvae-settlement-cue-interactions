@@ -66,5 +66,21 @@ plot(model)
 summary(model)
 
 # 6. Visualize model predictions
+# Below there is some code that I used for another project, maybe it's useful as a source of inspiration
+# ggpredict is probably the function that you have to use
+fit <- lm(avlength ~ O2_sat_av + Con_av^2 + netcen + updist, data=environment2)
+predict <- ggpredict(fit, terms = "Con_av")
+
+png(file="figure.png", res=600, width=3000, height=3000)
+par(mfrow=c(3,3))
+ggplot(predict, aes(x, predicted)) +
+  theme_bw() +
+  geom_line(color="red", size=1) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .1) +
+  geom_point(data = environment2, aes(x=environment2$Con_av, y=avlength)) +
+  labs(x=expression("Conductivity ["*mu*"S/cm]"), y=expression("Average length [mm SL]")) +
+  theme(axis.title.x = element_text(size=12),
+        axis.title.y = element_text(size=12)) +  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+dev.off()
 
 # 7. Power analysis
