@@ -1,6 +1,9 @@
 # Set working directory where both the R script and the data are stored.
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
+# Load libraries
+require(lme4)
+
 # Load the data
 data <- read.csv2(file="Settlement_cue_data1-All_data.csv", check.names=FALSE, sep=",")
 
@@ -8,7 +11,9 @@ data <- read.csv2(file="Settlement_cue_data1-All_data.csv", check.names=FALSE, s
 data[, 'Start_date'] <- as.Date(data[, 'Start_date'])
 data[, 'Fertilization_date'] <- as.Date(data[, 'Fertilization_date'])
 
-# Convert Cue to factor
+# Convert Cue and Tray Number to factor
+colnames(data)[4] <- 'Tray_Number'
+data[, 'Tray_Number'] <- as.factor(data[, 'Tray_Number'])
 data[, 'Cue'] <- as.factor(data[, 'Cue'])
 levels(data[,'Cue'])
 
@@ -37,16 +42,23 @@ data_u[, 'unattached_30hrs'] <- 0
 data_u <- data_u[, !(names(data_u) %in% c('settled_10hrs', 'unattached_10hrs', 'settled_20hrs', 'unattached_20hrs', 'settled_30hrs'))]
 colnames(data_u)[7] <- 'settled_30hrs'
 data <- rbind(data_s, data_u)
+table(data[,'settled_30hrs']) # just to see how many larvae settled
 
-# 2. Make a statistical model
-model <- lme(PI_endo ~ sqrt(length) + T_av + NH4_av + NO3_av, random=~1|site, data=data, na.action=na.omit)
+# 2. Make new binary predictor variables from multilevel factor
+# shell: sterilized vs. untreated
+# conspecific cue: present vs. absent
+# predator cue: present vs. absent
 
-# 3. Does data fulfill model assumptions?
+
+# 3. Make a statistical model
+model <- glmer(settled_30hrs ~ Cue + (1 | age) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data, family = binomial)
+
+# 4. Does data fulfill model assumptions?
 plot(model)
 
-# 4. Statistical test
+# 5. Statistical test
 summary(model)
 
-# 5. Visualize model predictions
+# 6. Visualize model predictions
 
-# 6. Power analysis
+# 7. Power analysis
