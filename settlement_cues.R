@@ -27,6 +27,8 @@ for(i in 1:nrow(data)){
 # 1. Calculate response variable from input data
 
 # 2. Make a statistical model
+model <- lme(PI_endo ~ sqrt(length) + T_av + NH4_av + NO3_av, random=~1|site, data=data, na.action=na.omit)
+summary(model)
 
 # 3. Does data fulfill model assumptions?
 
