@@ -85,7 +85,9 @@ summary(model4)
 # 6. Visualize model predictions
 # About ggeffects: https://strengejacke.github.io/ggeffects/articles/ggeffects.html
 # Try this out: https://strengejacke.github.io/ggeffects/articles/practical_logisticmixedmodel.html
-ggpredict(model2, terms = c("conspecific_cue", "predator_cue"))
-ggpredict(model3, terms = c("shell", "conspecific_cue"))
+m2 <- ggpredict(model2, terms = c("conspecific_cue", "predator_cue"))
+plot(m2)
+m3 <- ggpredict(model3, terms = c("shell", "conspecific_cue"))
+plot(m3)
 
 # 7. Power analysis
