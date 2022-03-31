@@ -3,6 +3,7 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 # Load libraries
 require(lme4)
+require(ggeffects)
 
 # Load the data
 data <- read.csv2(file="Settlement_cue_data1-All_data.csv", check.names=FALSE, sep=",")
@@ -82,21 +83,9 @@ summary(model3)
 summary(model4)
 
 # 6. Visualize model predictions
-# Below there is some code that I used for another project, maybe it's useful as a source of inspiration
-# ggpredict is probably the function that you have to use
-fit <- lm(avlength ~ O2_sat_av + Con_av^2 + netcen + updist, data=environment2)
-predict <- ggpredict(fit, terms = "Con_av")
-
-png(file="figure.png", res=600, width=3000, height=3000)
-par(mfrow=c(3,3))
-ggplot(predict, aes(x, predicted)) +
-  theme_bw() +
-  geom_line(color="red", size=1) +
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .1) +
-  geom_point(data = environment2, aes(x=environment2$Con_av, y=avlength)) +
-  labs(x=expression("Conductivity ["*mu*"S/cm]"), y=expression("Average length [mm SL]")) +
-  theme(axis.title.x = element_text(size=12),
-        axis.title.y = element_text(size=12)) +  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
-dev.off()
+# About ggeffects: https://strengejacke.github.io/ggeffects/articles/ggeffects.html
+# Try this out: https://strengejacke.github.io/ggeffects/articles/practical_logisticmixedmodel.html
+ggpredict(model2, terms = c("conspecific_cue", "predator_cue"))
+ggpredict(model3, terms = c("shell", "conspecific_cue"))
 
 # 7. Power analysis
