@@ -37,6 +37,7 @@ library(ggeffects)
 
 
 
+
 #loading data --> bdata (biofilm data)
 #use if controls = steralised + conspecific cue
 data <- read.csv2(file="biofilm excel.csv", check.names=FALSE, sep=",")

@@ -91,3 +91,38 @@ m3 <- ggpredict(model3, terms = c("shell", "conspecific_cue"))
 plot(m3)
 
 # 7. Power analysis
+install.packages("effectsize")
+install.packages("pwr")
+require("effectsize")
+require("pwr")
+
+#using data from 20hr settled and from sterilized shell treatments
+STRShell_20hr <- data[data$Cue == "Sterilized shell", "settled_20hrs"]
+STRShellCC_20hr <- data[data$Cue == "Sterilized shell + conspecific cue", "settled_20hrs"]
+STRShellCCPC_20hr <- data[data$Cue == "Sterilized shell + conspecific cue + predator cue", "settled_20hrs"]
+STRShellPC_20hr <- data[data$Cue == "Sterilized shell + predator cue", "settled_20hrs"]
+
+#find effect sizes for each combination of treatments 
+cohens1 <- cohens_d(STRShell_20hr,STRShellCC_20hr, pooled_sd = TRUE, mu=0, paired = FALSE, ci = 0.95, alterative = "two.sided", verbose = TRUE)
+cohens2 <- cohens_d(STRShell_20hr,STRShellCCPC_20hr, pooled_sd = TRUE, mu=0, paired = FALSE, ci = 0.95, alterative = "two.sided", verbose = TRUE)
+cohens3 <- cohens_d(STRShell_20hr,STRShellPC_20hr, pooled_sd = TRUE, mu=0, paired = FALSE, ci = 0.95, alterative = "two.sided", verbose = TRUE)
+cohens4 <- cohens_d(STRShellCC_20hr, STRShellCCPC_20hr, pooled_sd = TRUE, mu=0, paired = FALSE, ci = 0.95, alterative = "two.sided", verbose = TRUE)
+cohens5 <- cohens_d(STRShellCC_20hr,STRShellPC_20hr, pooled_sd = TRUE, mu=0, paired = FALSE, ci = 0.95, alterative = "two.sided", verbose = TRUE)
+cohens6 <- cohens_d(STRShellPC_20hr,STRShellCCPC_20hr, pooled_sd = TRUE, mu=0, paired = FALSE, ci = 0.95, alterative = "two.sided", verbose = TRUE)
+
+#power analysis
+power1 <- pwr.r.test(r=cohens1$Cohens_d, sig.level=.05, power=.8)
+power2 <- pwr.r.test(r=cohens2$Cohens_d, sig.level=.05, power=.8)
+power3 <- pwr.r.test(r=cohens3$Cohens_d, sig.level=.05, power=.8)
+power4 <- pwr.r.test(r=cohens4$Cohens_d, sig.level=.05, power=.8)
+power5 <- pwr.r.test(r=cohens5$Cohens_d, sig.level=.05, power=.8)
+power6 <- pwr.r.test(r=cohens6$Cohens_d, sig.level=.05, power=.8)
+
+show(power1)
+show(power2)
+show(power3)
+show(power4)
+show(power5)
+show(power6)
+
+
