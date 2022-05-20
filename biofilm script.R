@@ -42,7 +42,7 @@ library(ggeffects)
 data <- read.csv2(file="biofilm excel.csv", check.names=FALSE, sep=",")
 
 #use if controls = steralised + FSW
-data <- read.csv2(file="biofilm_control excel.csv", check.name=FALSE, sep=",")
+#data <- read.csv2(file="biofilm_control excel.csv", check.name=FALSE, sep=",")
 
 # Convert dates from chr to Date-format
 data[, 'Date_started'] <- as.Date(data[, 'Date_started'], "%d/%m/%Y")
