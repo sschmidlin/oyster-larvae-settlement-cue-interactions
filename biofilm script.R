@@ -1,3 +1,23 @@
+
+######################################################################################################################
+####           LIST           ####
+# what still needs to be done:
+
+
+# check out if theres a batch difference
+# possible re-formatting of the data for wells with missing larvae
+#    --> if the larvae are missing in both 20 and 30h then scrap the well
+#    --> if they have been found again at 30h then we keep and we attribute it to hiding
+# 
+# create some interesting bar and histogram charts (its difficult on R and i'm bad so maybe excel)
+
+# 
+
+
+
+
+
+
 ##start
 
 setwd("C:\\Users\\Owner\\Desktop\\2nd experiment")
@@ -8,9 +28,11 @@ setwd("C:\\Users\\Owner\\Desktop\\2nd experiment")
 #require(lme4)
 #require(ggeffects)
 #require(ggplot2)
-
+library(ggplot2)
 library(dplyr)
 library(stringr)
+library(lme4)
+library(ggeffects)
 
 
 
@@ -200,7 +222,7 @@ table(data_3[, c('shell', 'Conspecific', 'Predator')]) ######   we dont have any
 rm(data_s1, data_s2, data_s3, data_u1, data_u2, data_u3)
 
 # 3. Make a statistical model
-model <- glmer(Settled_30h ~ shell * Conspecific * Predator + (1 | age) + (1 | Tray_Number_Well), data = data_3, family = binomial)
+model <- glmer(Settled_20h ~ shell * Conspecific * Predator + (1 | age) + (1 | Tray_Number_Well), data = data_3, family = binomial)
 plot(model)
 ##    model always fails to converge (?)
 ##    Experiment was unbalanced 
@@ -212,7 +234,7 @@ plot(model)
 m_data1 <- data_3[data_3[, 'shell'] %in% 'Biofilm', ]
 #make a table with 2 cues
 table(m_data1[, c('Conspecific', 'Predator')])
-model2 <- glmer(Settled_30h ~ Conspecific * Predator + (1 | age) +(1 | Tray_Number_Well), data = data_3, family = binomial)
+model2 <- glmer(Settled_20h ~ Conspecific * Predator + (1 | age) +(1 | Tray_Number_Well) + (1 | Larvae_batch), data = data_3, family = binomial)
 
 plot(model2)
 summary(model2)
@@ -225,7 +247,7 @@ plot(m2)
 # Repeat analysis once more without steralised cues
 m_data2 <- data_3[data_3[, 'Conspecific'] %in% 'absent', ]
 table(m_data2[, c('Predator', 'shell')])
-model3 <- glmer(Settled_30h ~ Predator * shell + (1 | age) + (1 | Tray_Number_Well), data = data_3, family = binomial)
+model3 <- glmer(Settled_20h ~ Predator * shell + (1 | age) + (1 | Tray_Number_Well), data = data_3, family = binomial)
 plot(model3)
 summary(model3)
 m3 <- ggpredict(model3, terms = c("Predator", "shell"))
@@ -233,30 +255,99 @@ plot(m3)
 
 
 # Model with all data, but dropping unbalanced factor combinations
-model4 <- glmer(Settled_30h ~ shell + Conspecific + Predator + shell:Conspecific + Conspecific:Predator + (1 | age) + (1 | Tray_Number_Well), data = data_3, family = binomial)
+model4 <- glmer(Settled_30h ~ shell + Conspecific + Predator + shell:Conspecific + Conspecific:Predator + shell:Predator + (1 | age) + (1 | Tray_Number_Well) + (1 | Larvae_batch), data = data_3, family = binomial)
 summary(model4)
 plot(model4)
 m4 <- ggpredict(model4, terms = c("shell","Predator" , "Conspecific"))
 plot(m4)
 
+
+#  Model with most data again, but looking if batch is a determining factor
+#model5 <- glmer(Settled_30h ~ Larvae_batch + shell + Conspecific + Predator + (1 | age) + (1 | Tray_Number_Well), data = data_3, family = binomial)
+#summary(model5)
+
+
+
 ###################################################################################################################
+
+
+
+
+
+
+
+
+
+
 
 #other plots
 
 ##  creating df for the plots (individual cues, idk if its a good idea or not but will try)
 data_p <- data[data$Cue=="Biofilm",]
-
-## need to create 2 new columns, col1 = %settled, col2 = time of settlement (have 10, 20, 30) and maybe col3 = unsettled
+ 
+## need to create 2 new columns, col1 = %settled, col2 = time of settlement (have 10, 20, 30) and maybe col3 = %unsettled
 data_p <- cbind(data_p[1:5], stack(data_p[6:10 ]))
+
+
+####data_p <- cbind(data_p[1:5], stack(data_p(6 : 8), drop(FALSE)
+
+
 #data_p <- unstack(data_p$ind, select = "Unsettled_10h" )
 data_p['Time'] <- data_p['ind'] 
 table(data_p$Time)
 
 data_p$Time <- as.character(data_p$Time)
+data_p$Time<- as.numeric(gsub("Settled_10h", 10, gsub("Settled_20h", 20, gsub("Settled_30h", 30, data_p$Time))))
+
+
+
+
+#1) 100% stacked bar charts with settlement % (settled/not settled) and time sampled
+
+#2) cumulative proportion of larvae settled over the 30hs (0h, 10h, 20h, 30h)
+
+#3) individual cues and how they induce larvae settlement
+##    how do i get the results for the multi-cue experiments? ie: conspecific_predator...?
+
+
+
 
 ######################################## test area #####################################################
+summary(data)
+#tryouts
+
+ggplot(data_p, aes(x= data_p$Time, y= data_p$values)) +geom_point()
+ggplot(data = data_p, aes(y = values)) + geom_histogram()
+ggplot (data_p, aes (x = Time, fill = Ind)) + geom_bar()
 
 
+
+##R by Matty
+
+
+
+data_t <- data
+#larvae total in each well
+data_p ["total"] <- 
+
+
+
+
+
+
+new.col <- mean(df$oldcolumn)
+cbind)df, new.col)
+
+or
+
+library (tidyverse)
+mutate(iris %>%rowwise(),average_length_cols = rowMeans (cbind(Petal.Length, Sepal.Length)))
+
+
+
+
+data_p["total"] <- data_p["values"]
+data_p =
 data_p$Time <- replace (data_p$Time, "Settled_10h" , 10)
 
 
@@ -285,22 +376,6 @@ data_p$Time["Settled_30h"] <- 30
 
 
 
-#1) 100% stacked bar charts with settlement % (settled/not settled) and time sampled
-
-#2) cumulative proportion of larvae settled over the 30hs (0h, 10h, 20h, 30h)
-
-#3) individual cues and how they induce larvae settlement
-##    how do i get the results for the multi-cue experiments? ie: conspecific_predator...?
-
-summary(data)
-ggplot(data = data_1$Settled_10h, aes(x= time, y= proportion, col = disp)) + geom_point()
-
-
-
-
-
-
-
 
 
 #looking if there was high variation between dates for the control cue (exemple)
@@ -308,32 +383,7 @@ install.packages("writexl")
 library("writexl")
 write_xlsx(data,"C:\\Users\\Owner\\Desktop\\2nd experiment\\databio.xlsx")
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            
-
-
-
-
+write_xlsx(data_p,"C:\\Users\\Owner\\Desktop\\2nd experiment\\bartest.xlsx")
 
 
 
