@@ -125,4 +125,78 @@ show(power4)
 show(power5)
 show(power6)
 
+#load data from second trial 
+data.2 <- read.csv2(file="Settelment cues experiment 1 NewData.csv", check.names=FALSE, sep=",")
+data.2[, 'Tray_well'] <- as.factor(data.2[, 'Tray_well'])
+data.2[, 'Cue']  <- as.factor(data.2[, 'Cue'])
+
+
+
+# 1a. Calculate response variable from input data
+# data after 30 hours
+# Multiply rows by number of larvae per well for settled and unattached and concatenate the resulting dataframes
+mult_s30.2 <- rep(1:nrow(data.2), data.2[, 'settled_30hr'])
+mult_u30.2 <- rep(1:nrow(data.2), data.2[, 'unattached_30hr'])
+data_s30.2 <- data.2[mult_s30.2,]
+data_s30.2[, 'settled_30hr'] <- 1
+data_s30.2 <- data_s30.2[, !(names(data_s30.2) %in% c('settled_10hr', 'unattached_10hr', 'settled_20hr', 'unattached_20hr', 'unattached_30hr'))]
+data_u30.2 <- data.2[mult_u30.2,]
+data_u30.2[, 'unattached_30hr'] <- 0
+data_u30.2 <- data_u30.2[, !(names(data_u30.2) %in% c('settled_10hr', 'unattached_10hr', 'settled_20hr', 'unattached_20hr', 'settled_30hr'))]
+colnames(data_u30.2)[6] <- 'settled_30hr'
+data30.2 <- rbind(data_s30.2, data_u30.2)
+table(data30.2[,'settled_30hr']) # just to see how many larvae settled
+
+# 2a. Make new binary predictor variables from multilevel factor
+# shell: sterilized vs. untreated
+# conspecific cue: present vs. absent
+# predator cue: present vs. absent
+data30.2['shell'] <- data30.2['Cue']
+data30.2['predator_cue'] <- data30.2['Cue']
+data30.2['conspecific_cue'] <- data30.2['Cue']
+data30.2$predator_cue <- as.factor(data30.2$predator_cue)
+data30.2$conspecific_cue <- as.factor(data30.2$conspecific_cue)
+levels(data30.2$shell) <- c(rep('untreated', 3), rep('sterilized', 4))
+levels(data30.2$conspecific_cue) <- c('absent', 'present', rep('absent', 2), rep('present', 2), 'absent')
+levels(data30.2$predator_cue) <- c(rep('absent', 2), 'present', rep('absent', 2), rep('present', 2))
+table(data30.2[, c('shell', 'conspecific_cue', 'predator_cue')]) # check if experiment was balanced ### unsure about this table
+
+
+# 3a. Make a statistical model
+model30.2 <- glmer(settled_30hr ~ shell * conspecific_cue * predator_cue + (1 | Age) + (1 | Tray_well) + (1 | Larvae_batch), data = data30.2, family = binomial)
+
+# repeating analysis with only sterilized shells
+data30.22 <- data30.2[data30.2[, 'shell'] %in% 'sterilized', ]
+table(data30.22[, c('conspecific_cue', 'predator_cue')])
+model2.30.2 <- glmer(settled_30hr ~ conspecific_cue * predator_cue + (1 | Age) + (1 | Tray_well) + (1 | Larvae_batch), data = data30.2, family = binomial)
+
+# Repeat analysis once more without predator cues
+data30.23 <- data30.2[data30.2[, 'predator_cue'] %in% 'absent', ]
+table(data30.23[, c('shell', 'conspecific_cue')])
+model3.30.2 <- glmer(settled_30hr ~ shell * conspecific_cue + (1 | Age) + (1 | Tray_well) + (1 | Larvae_batch), data = data30.2, family = binomial)
+
+# Model with all data, but dropping unbalanced factor combinations
+model4.30.2 <- glmer(settled_30hr ~ shell + conspecific_cue + predator_cue + shell:conspecific_cue + conspecific_cue:predator_cue + (1 | Age) + (1 | Tray_well) + (1 | Larvae_batch), data = data30.2, family = binomial)
+
+# 4a. Does data fulfill model assumptions?
+plot(model30.2)
+plot(model2.30.2)
+plot(model3.30.2)
+plot(model4.30.2)
+
+# 5a. Statistical test
+summary(model30.2)
+summary(model2.30.2)
+summary(model3.30.2)
+summary(model4.30.2)
+
+# 6a. Visualize model predictions
+# About ggeffects: https://strengejacke.github.io/ggeffects/articles/ggeffects.html
+# Try this out: https://strengejacke.github.io/ggeffects/articles/practical_logisticmixedmodel.html
+m2.30.2 <- ggpredict(model2.30.2, terms = c("conspecific_cue", "predator_cue"))
+plot(m2.30.2)
+m3.30.2 <- ggpredict(model3.30.2, terms = c("shell", "conspecific_cue"))
+plot(m3.30.2)
+m4.30.2 <- ggpredict(model4.30.2, terms = c("shell", "conspecific_cue", "predator_cue"))
+plot(m4.30.2)
 

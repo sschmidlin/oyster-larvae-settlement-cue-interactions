@@ -1,9 +1,9 @@
-Date started,Larvae batch ,Age,Tray ID,Cue,setteled_10hr,unattached_10hr,setteled_20hr,uattached_20hr,setteled_30hr,uattached_30hr
-25/4 ,1,33,1a,conspecific shell ,0,6,2,4,2,4
+Date started,Larvae_batch ,Age,Tray_well,Cue,settled_10hr,unattached_10hr,settled_20hr,unattached_20hr,settled_30hr,unattached_30hr
+25/4 ,1,33,1a,conspecific shell,0,6,2,4,2,4
 25/4,1,33,1b,conspecific shell_conspecific cue,4,2,5,1,6,0
 25/4,1,33,1c,conspecific shell_predator cue,4,2,4,2,4,2
-25/4,1,33,1d,steralized shell ,0,6,1,5,1,5
-25/4,1,33,1e,steralized shell_conspecific cue ,1,4,1,4,1,4
+25/4,1,33,1d,steralized shell,0,6,1,5,1,5
+25/4,1,33,1e,steralized shell_conspecific cue,1,4,1,4,1,4
 25/4,1,33,1f,steralized shell_conspecific cue_predator cue,0,6,1,5,3,3
 25/4,1,33,2a,Steralized shell_predator cue,0,7,0,7,0,7
 25/4,1,33,2b,conspecific shell_predator cue,4,2,4,2,4,2
