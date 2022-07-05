@@ -4,6 +4,7 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 # Load libraries
 require(lme4)
 require(ggeffects)
+require(DHARMa)
 
 # Load the data
 data <- read.csv2(file="Settlement_cue_data1-All_data.csv", check.names=FALSE, sep=",")
@@ -55,7 +56,6 @@ data['conspecific_cue'] <- data['Cue']
 levels(data$conspecific_cue) <- c('absent', 'present', rep('absent', 2), rep('present', 2), 'absent')
 data['predator_cue'] <- data['Cue']
 levels(data$predator_cue) <- c(rep('absent', 2), 'present', rep('absent', 2), rep('present', 2))
-table(data[, c('shell', 'conspecific_cue', 'predator_cue')]) # check if experiment was balanced
 
 # 3. Make a statistical model
 model <- glmer(settled_30hrs ~ shell * conspecific_cue * predator_cue + (1 | age) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data, family = binomial)
@@ -63,10 +63,37 @@ model <- glmer(settled_30hrs ~ shell * conspecific_cue * predator_cue + (1 | age
 data2 <- data[data[, 'shell'] %in% 'sterilized', ]
 table(data2[, c('conspecific_cue', 'predator_cue')])
 model2 <- glmer(settled_30hrs ~ conspecific_cue * predator_cue + (1 | age) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data, family = binomial)
+# Testing model assumptions
+testDispersion(model2)
+simulationOutput <- simulateResiduals(fittedModel = model2, plot = F)
+plot(simulationOutput)
+# Test model
+summary(model2)
+
+# Checking for a batch effect
+table(data2[, c('conspecific_cue', 'predator_cue')])
+model2 <- glmer(settled_30hrs ~ conspecific_cue * predator_cue + (1 | age) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data, family = binomial)
+# Testing model assumptions
+testDispersion(model2)
+simulationOutput <- simulateResiduals(fittedModel = model2, plot = F)
+plot(simulationOutput)
+# Test model
+summary(model2)
+# Visualize model predictions
+m2 <- ggpredict(model2, terms = c("conspecific_cue", "predator_cue", "Larvae_"))
+plot(m2)
+
+
 # Repeat analysis once more without predator cues
 data3 <- data[data[, 'predator_cue'] %in% 'absent', ]
 table(data3[, c('shell', 'conspecific_cue')])
 model3 <- glmer(settled_30hrs ~ shell * conspecific_cue + (1 | age) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data, family = binomial)
+# Testing model assumptions
+testDispersion(model3)
+simulationOutput <- simulateResiduals(fittedModel = model3, plot = F)
+plot(simulationOutput)
+# Test model
+summary(model3)
 # Model with all data, but dropping unbalanced factor combinations
 model4 <- glmer(settled_30hrs ~ shell + conspecific_cue + predator_cue + shell:conspecific_cue + conspecific_cue:predator_cue + (1 | age) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data, family = binomial)
 
@@ -164,19 +191,52 @@ table(data30.2[, c('shell', 'conspecific_cue', 'predator_cue')]) # check if expe
 
 # 3a. Make a statistical model
 model30.2 <- glmer(settled_30hr ~ shell * conspecific_cue * predator_cue + (1 | Age) + (1 | Tray_well) + (1 | Larvae_batch), data = data30.2, family = binomial)
+table(data30.2[, c('conspecific_cue', 'predator_cue', 'shell')])
 
 # repeating analysis with only sterilized shells
 data30.22 <- data30.2[data30.2[, 'shell'] %in% 'sterilized', ]
 table(data30.22[, c('conspecific_cue', 'predator_cue')])
 model2.30.2 <- glmer(settled_30hr ~ conspecific_cue * predator_cue + (1 | Age) + (1 | Tray_well) + (1 | Larvae_batch), data = data30.2, family = binomial)
+# Testing model assumptions
+testDispersion(model2.30.2)
+simulationOutput <- simulateResiduals(fittedModel = model2.30.2, plot = F)
+plot(simulationOutput)
+# Test model
+summary(model2.30.2)
+
+data30.22 <- data30.2[data30.2[, 'shell'] %in% 'sterilized', ]
+table(data30.22[, c('conspecific_cue', 'predator_cue', 'Larvae_batch')])
+model2.30.2 <- glmer(settled_30hr ~ conspecific_cue * predator_cue * Larvae_batch + (1 | Age) + (1 | Tray_well), data = data30.2, family = binomial)
+# Testing model assumptions
+testDispersion(model2.30.2)
+simulationOutput <- simulateResiduals(fittedModel = model2.30.2, plot = F)
+plot(simulationOutput)
+# Test model
+summary(model2.30.2)
+# Visualize model predictions
+m2.30.2 <- ggpredict(model2.30.2, terms = c("conspecific_cue", "predator_cue", "Larvae_batch"))
+plot(m2.30.2)
 
 # Repeat analysis once more without predator cues
 data30.23 <- data30.2[data30.2[, 'predator_cue'] %in% 'absent', ]
 table(data30.23[, c('shell', 'conspecific_cue')])
 model3.30.2 <- glmer(settled_30hr ~ shell * conspecific_cue + (1 | Age) + (1 | Tray_well) + (1 | Larvae_batch), data = data30.2, family = binomial)
+# Testing model assumptions
+testDispersion(model3.30.2)
+simulationOutput <- simulateResiduals(fittedModel = model3.30.2, plot = F)
+plot(simulationOutput)
+# Test model
+summary(model3.30.2)
 
 # Model with all data, but dropping unbalanced factor combinations
 model4.30.2 <- glmer(settled_30hr ~ shell + conspecific_cue + predator_cue + shell:conspecific_cue + conspecific_cue:predator_cue + (1 | Age) + (1 | Tray_well) + (1 | Larvae_batch), data = data30.2, family = binomial)
+table(data30.2[, c('shell', 'predator_cue', 'conspecific_cue')])
+# Testing model assumptions
+testDispersion(model4.30.2)
+simulationOutput <- simulateResiduals(fittedModel = model4.30.2, plot = F)
+plot(simulationOutput)
+# Test model
+summary(model4.30.2)
 
 # 4a. Does data fulfill model assumptions?
 plot(model30.2)
