@@ -14,16 +14,11 @@ data[, 'Start_date'] <- as.Date(data[, 'Start_date'])
 data[, 'Fertilization_date'] <- as.Date(data[, 'Fertilization_date'])
 
 # Convert Cue and Tray Number to factor
-colnames(data)[4] <- 'Tray_Number'
+colnames(data)[6] <- 'Tray_Number'
 data[, 'Tray_Number'] <- as.factor(data[, 'Tray_Number'])
 data[, 'Cue'] <- as.factor(data[, 'Cue'])
 levels(data[,'Cue'])
 
-# Calculate ages of larvae
-data['age'] <- NA
-for(i in 1:nrow(data)){
-  data[i, 'age'] <- difftime(data[i, 'Start_date'], data[i, 'Fertilization_date'], units = "days")
-}
 
 # Does settlement differ between treatments?
 # Type of model: generalized linear mixed-effect model; response variable is binary -> logistic regression
@@ -42,7 +37,7 @@ data_s <- data_s[, !(names(data_s) %in% c('settled_10hrs', 'unattached_10hrs', '
 data_u <- data[mult_u,]
 data_u[, 'unattached_30hrs'] <- 0
 data_u <- data_u[, !(names(data_u) %in% c('settled_10hrs', 'unattached_10hrs', 'settled_20hrs', 'unattached_20hrs', 'settled_30hrs'))]
-colnames(data_u)[7] <- 'settled_30hrs'
+colnames(data_u)[9] <- 'settled_30hrs'
 data <- rbind(data_s, data_u)
 table(data[,'settled_30hrs']) # just to see how many larvae settled
 
@@ -58,11 +53,11 @@ data['predator_cue'] <- data['Cue']
 levels(data$predator_cue) <- c(rep('absent', 2), 'present', rep('absent', 2), rep('present', 2))
 
 # 3. Make a statistical model
-model <- glmer(settled_30hrs ~ shell * conspecific_cue * predator_cue + (1 | age) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data, family = binomial)
+model <- glmer(settled_30hrs ~ shell * conspecific_cue * predator_cue + (1 | age) + (1 | Batch) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data, family = binomial)
 # Experiment was unbalanced, lacking data for untreated shells with predator cues present -> repeat analysis with only sterilized shells
-data2 <- data[data[, 'shell'] %in% 'sterilized', ]
-table(data2[, c('conspecific_cue', 'predator_cue')])
-model2 <- glmer(settled_30hrs ~ conspecific_cue * predator_cue + (1 | age) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data, family = binomial)
+data0 <- data[data[, 'shell'] %in% 'sterilized', ]
+table(data0[, c('conspecific_cue', 'predator_cue')])
+model2 <- glmer(settled_30hrs ~ conspecific_cue * predator_cue + (1 | age) + (1 | Batch) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data, family = binomial)
 # Testing model assumptions
 testDispersion(model2)
 simulationOutput <- simulateResiduals(fittedModel = model2, plot = F)
@@ -72,7 +67,7 @@ summary(model2)
 
 # Checking for a batch effect
 table(data2[, c('conspecific_cue', 'predator_cue')])
-model2 <- glmer(settled_30hrs ~ conspecific_cue * predator_cue + (1 | age) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data, family = binomial)
+model2 <- glmer(settled_30hrs ~ conspecific_cue * predator_cue + (1 | age) + (1 | Crab) + (1 | Batch) + (1 | Tray_Number) + (1 | Well), data = data, family = binomial)
 # Testing model assumptions
 testDispersion(model2)
 simulationOutput <- simulateResiduals(fittedModel = model2, plot = F)
@@ -80,14 +75,14 @@ plot(simulationOutput)
 # Test model
 summary(model2)
 # Visualize model predictions
-m2 <- ggpredict(model2, terms = c("conspecific_cue", "predator_cue", "Larvae_"))
+m2 <- ggpredict(model2, terms = c("conspecific_cue", "predator_cue"))
 plot(m2)
 
 
 # Repeat analysis once more without predator cues
 data3 <- data[data[, 'predator_cue'] %in% 'absent', ]
 table(data3[, c('shell', 'conspecific_cue')])
-model3 <- glmer(settled_30hrs ~ shell * conspecific_cue + (1 | age) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data, family = binomial)
+model3 <- glmer(settled_30hrs ~ shell * conspecific_cue + (1 | age) + (1 | Batch) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data, family = binomial)
 # Testing model assumptions
 testDispersion(model3)
 simulationOutput <- simulateResiduals(fittedModel = model3, plot = F)
@@ -95,7 +90,7 @@ plot(simulationOutput)
 # Test model
 summary(model3)
 # Model with all data, but dropping unbalanced factor combinations
-model4 <- glmer(settled_30hrs ~ shell + conspecific_cue + predator_cue + shell:conspecific_cue + conspecific_cue:predator_cue + (1 | age) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data, family = binomial)
+model4 <- glmer(settled_30hrs ~ shell + conspecific_cue + predator_cue + shell:conspecific_cue + conspecific_cue:predator_cue + (1 | age) + (1 | Batch) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data, family = binomial)
 
 # 4. Does data fulfill model assumptions?
 plot(model)
@@ -116,8 +111,255 @@ m2 <- ggpredict(model2, terms = c("conspecific_cue", "predator_cue"))
 plot(m2)
 m3 <- ggpredict(model3, terms = c("shell", "conspecific_cue"))
 plot(m3)
+m4 <- ggpredict(model4, terms = c("shell", "conspecific_cue", "predator_cue"))
+plot(m4)
 
-# 7. Power analysis
+#another model for shell * predator cue m5
+data5 <- data[data[, 'conspecific_cue'] %in% 'present', ]
+model5 <- glmer(settled_30hrs ~ shell * predator_cue + (1 | age) + (1 | Batch) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data5, family = binomial)
+m5 <-ggpredict(model5, terms = c("shell", "predator_cue"))
+plot(m5)
+summary(model5)
+
+
+# visualizing m2
+
+plot(m2) +
+  labs(x = 'Conspecific Cue (waterborne)', 
+       y= 'Larvae Settled (%)',
+       title = "Predicted Settlement 30hrs") +
+  guides(color = guide_legend(title = "Predator Cue")) +
+  scale_color_manual(breaks = c("absent", "present")
+                     , labels= c("Absent", "Present"),
+                     values = c("Black", "4DBBD5B2")) +
+  scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1))  #to change the y axis limits
+
+
+# visualizing m3
+plot(m3) +
+  labs(x = 'Conspecific Cue (Shell)', 
+       y= 'Larvae Settled (%)',
+       title = "Predicted Settlement 30hrs") +
+  guides(color = guide_legend(title = "Conspecific Cue")) +
+  scale_color_manual(breaks = c("absent", "present")
+                     , labels= c("Absent", "Present"),
+                     values = c("Black", "aquamarine3")) +
+  scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1))  #to change the y axis limits
+
+# visualizing m5
+plot(m5) +
+  labs(x = 'Conspecific Cue (Shell)', 
+       y= 'Larvae Settled (%)',
+       title = "Predicted Settlement 30hrs") +
+  guides(color = guide_legend(title = "Predator Cue")) +
+  scale_color_manual(breaks = c("absent", "present")
+                     , labels= c("Absent", "Present"),
+                     values = c("Black", "darkorchid3")) +
+  scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1))   #to change the y axis limits
+
+
+#graphs for 20 hours!!!!
+data2 <- read.csv2(file="Settlement_cue_data1-All_data.csv", check.names=FALSE, sep=",")
+
+
+# Convert Cue and Tray Number to factor
+colnames(data2)[6] <- 'Tray_Number'
+data2[, 'Tray_Number'] <- as.factor(data2[, 'Tray_Number'])
+data2[, 'Cue'] <- as.factor(data2[, 'Cue'])
+levels(data2[,'Cue'])
+
+#Calculate response variable from input data
+# Multiply rows by number of larvae per well for settled and unattached and concatenate the resulting dataframes
+mult_s20 <- rep(1:nrow(data2), data2[, 'settled_20hrs'])
+mult_u20 <- rep(1:nrow(data2), data2[, 'unattached_20hrs'])
+data_s20 <- data2[mult_s20,]
+data_s20[, 'settled_20hrs'] <- 1
+data_s20 <- data_s20[, !(names(data_s20) %in% c('settled_10hrs', 'unattached_10hrs', 'settled_30hrs', 'unattached_20hrs', 'unattached_30hrs'))]
+data_u20 <- data2[mult_u20,]
+data_u20[, 'unattached_20hrs'] <- 0
+data_u20 <- data_u20[, !(names(data_u20) %in% c('settled_10hrs', 'unattached_10hrs', 'settled_20hrs', 'unattached_30hrs', 'settled_30hrs'))]
+colnames(data_u20)[9] <- 'settled_20hrs'
+data2 <- rbind(data_s20, data_u20)
+table(data2[,'settled_20hrs']) # just to see how many larvae settled
+
+# 2. Make new binary predictor variables from multilevel factor
+# shell: sterilized vs. untreated
+# conspecific cue: present vs. absent
+# predator cue: present vs. absent
+data2['shell'] <- data2['Cue']
+levels(data2$shell) <- c(rep('untreated', 3), rep('sterilized', 4))
+data2['conspecific_cue'] <- data2['Cue']
+levels(data2$conspecific_cue) <- c('absent', 'present', rep('absent', 2), rep('present', 2), 'absent')
+data2['predator_cue'] <- data2['Cue']
+levels(data2$predator_cue) <- c(rep('absent', 2), 'present', rep('absent', 2), rep('present', 2))
+
+# 3. Make a statistical model
+model21 <-glmer(settled_20hrs ~ conspecific_cue * predator_cue + (1 | age) + (1 | Batch) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data2, family = binomial)
+
+
+#m31
+data31 <- data2[data2[, 'predator_cue'] %in% 'absent', ]
+table(data31[, c('shell', 'conspecific_cue')])
+model31 <- glmer(settled_20hrs ~ shell * conspecific_cue + (1 | age) + (1 | Batch) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data31, family = binomial)
+
+model41 <- glmer(settled_20hrs ~ shell * predator_cue + (1 | age) + (1 | Batch) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data2, family = binomial)
+
+
+
+# 4. Does data fulfill model assumptions?
+plot(model21)
+summary(model21)
+plot(model31)
+summary(model31)
+plot(model41)
+summary(model41)
+
+# 6. Visualize model predictions
+m21 <- ggpredict(model21, terms = c("conspecific_cue", "predator_cue"))
+plot(m21)
+m31 <- ggpredict(model31, terms = c("shell", "conspecific_cue"))
+plot(m31)
+m41 <- ggpredict(model41, terms = c("shell", "predator_cue"))
+plot(m41)
+
+#visualizing m21
+plot(m21) +
+  labs(x = 'Conspecific Cue (waterborne)', 
+       y= 'Larvae Settled (%)',
+       title = " Predictied settlement 20hrs") +
+  guides(color = guide_legend(title = "Predator Cue")) +
+  scale_color_manual(breaks = c("absent", "present")
+                     , labels= c("Absent", "Present"),
+                     values = c("Black", "4DBBD5B2")) +
+  scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1))  #to change the y axis limits
+
+
+# visualizing m31
+plot(m31) +
+  labs(x = 'Conspecific Cue (Shell)', 
+       y= 'Larvae Settled (%)',
+       title = "Predicted Settlement 20hrs") +
+  guides(color = guide_legend(title = "Conspecific Cue")) +
+  scale_color_manual(breaks = c("absent", "present")
+                     , labels= c("Absent", "Present"),
+                     values = c("Black", "aquamarine3")) +
+  scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1))  #to change the y axis limits
+
+# visualizing m41
+plot(m41) +
+  labs(x = 'Conspecific Cue (Shell)', 
+       y= 'Larvae Settled (%)',
+       title = "Predicted Settlement 20hrs") +
+  guides(color = guide_legend(title = "Predator Cue")) +
+  scale_color_manual(breaks = c("absent", "present")
+                     , labels= c("Absent", "Present"),
+                     values = c("Black", "darkorchid3")) +
+  scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1))   #to change the y axis limits
+
+
+# again for 10hrs 
+
+data4 <- read.csv2(file="Settlement_cue_data1-All_data.csv", check.names=FALSE, sep=",")
+
+
+# Convert Cue and Tray Number to factor
+colnames(data4)[6] <- 'Tray_Number'
+data4[, 'Tray_Number'] <- as.factor(data2[, 'Tray_Number'])
+data4[, 'Cue'] <- as.factor(data4[, 'Cue'])
+levels(data4[,'Cue'])
+
+#Calculate response variable from input data
+# Multiply rows by number of larvae per well for settled and unattached and concatenate the resulting dataframes
+mult_s10 <- rep(1:nrow(data4), data4[, 'settled_10hrs'])
+mult_u10 <- rep(1:nrow(data4), data4[, 'unattached_10hrs'])
+data_s10 <- data4[mult_s10,]
+data_s10[, 'settled_10hrs'] <- 1
+data_s10 <- data_s10[, !(names(data_s10) %in% c('unattached_10hrs', 'settled_20hrs', 'unattached_20hrs', 'settled_30hrs', 'unattached_30hrs'))]
+data_u10 <- data4[mult_u10,]
+data_u10[, 'unattached_10hrs'] <- 0
+data_u10 <- data_u10[, !(names(data_u10) %in% c('settled_10hrs', 'unattached_20hrs', 'settled_20hrs', 'unattached_30hrs', 'settled_30hrs'))]
+colnames(data_u10)[9] <- 'settled_10hrs'
+data4 <- rbind(data_s10, data_u10)
+table(data4[,'settled_10hrs']) # just to see how many larvae settled
+
+# 2. Make new binary predictor variables from multilevel factor
+# shell: sterilized vs. untreated
+# conspecific cue: present vs. absent
+# predator cue: present vs. absent
+data4['shell'] <- data4['Cue']
+levels(data4$shell) <- c(rep('untreated', 3), rep('sterilized', 4))
+data4['conspecific_cue'] <- data4['Cue']
+levels(data4$conspecific_cue) <- c('absent', 'present', rep('absent', 2), rep('present', 2), 'absent')
+data4['predator_cue'] <- data4['Cue']
+levels(data4$predator_cue) <- c(rep('absent', 2), 'present', rep('absent', 2), rep('present', 2))
+
+# 3. Make a statistical model
+model11 <-glmer(settled_10hrs ~ conspecific_cue * predator_cue + (1 | age) + (1 | Batch) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data4, family = binomial)
+
+#m12 without predator cues 
+data12 <- data4[data4[, 'predator_cue'] %in% 'absent', ]
+table(data12[, c('shell', 'conspecific_cue')])
+model12 <- glmer(settled_10hrs ~ shell * conspecific_cue + (1 | age) + (1 | Batch) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data12, family = binomial)
+
+model13 <- glmer(settled_10hrs ~ shell * predator_cue + (1 | age) + (1 | Batch) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data4, family = binomial)
+
+
+
+# 4. Does data fulfill model assumptions?
+plot(model11)
+summary(model11)
+plot(model12)
+summary(model12)
+summary(model13)
+
+# 6. Visualize model predictions
+m11 <- ggpredict(model11, terms = c("conspecific_cue", "predator_cue"))
+plot(m11)
+m12 <- ggpredict(model12, terms = c("shell", "conspecific_cue"))
+plot(m12)
+m13 <- ggpredict(model13, terms = c("shell", "predator_cue"))
+plot(m13)
+
+
+
+
+#visualizing m11
+plot(m11) +
+  labs(x = 'Conspecific Cue (waterborne)', 
+       y= 'Larvae Settled (%)',
+       title = " Predictied settlement 10hrs") +
+  guides(color = guide_legend(title = "Predator Cue")) +
+  scale_color_manual(breaks = c("absent", "present")
+                     , labels= c("Absent", "Present"),
+                     values = c("Black", "4DBBD5B2")) +
+  scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1))  #to change the y axis limits
+
+
+# visualizing m12
+plot(m12) +
+  labs(x = 'Conspecific Cue (Shell)', 
+       y= 'Larvae Settled (%)',
+       title = "Predicted Settlement 10hrs") +
+  guides(color = guide_legend(title = "Conspecific Cue")) +
+  scale_color_manual(breaks = c("absent", "present")
+                     , labels= c("Absent", "Present"),
+                     values = c("Black", "aquamarine3")) +
+  scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1))  #to change the y axis limits
+
+# visualizing m13
+plot(m13) +
+  labs(x = 'Conspecific Cue (Shell)', 
+       y= 'Larvae Settled (%)',
+       title = "Predicted Settlement 10hrs") +
+  guides(color = guide_legend(title = "Predator Cue")) +
+  scale_color_manual(breaks = c("absent", "present")
+                     , labels= c("Absent", "Present"),
+                     values = c("Black", "darkorchid3")) +
+  scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1))   #to change the y axis limits
+
+
+
+#Power analysis
 install.packages("effectsize")
 install.packages("pwr")
 require("effectsize")
