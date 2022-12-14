@@ -1,14 +1,21 @@
-setwd("~/GitHub/Cue Interactions- 0822")
-install.packages('lme4')
-install.packages('Matrix')
-install.packages('ggeffects')
-install.packages('DHARMa')
-install.packages("stringr")
+#setwd("~/GitHub/Cue Interactions- 0822")
+#install.packages('lme4')
+#install.packages('Matrix')
+#install.packages('ggeffects')
+#install.packages('DHARMa')
+#install.packages("stringr")
 require('lme4')
 require(ggeffects)
 require('DHARMa')
 require(stringr)
 
+'''
+Comment Pascal:
+You can use rstudioapi to avoid having to enter absolute paths. It sets the working directory
+to the path in which the script is located. That's quite handy when sharing
+
+#set working directory to current directory
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path)) # requires installation of package "rstudioapi"
 
 data <- read.csv2(file="cue interactions data.csv", sep=",")
 
@@ -82,10 +89,14 @@ data$conspecific_cue <-sub("FALSE", "absent", data$conspecific_cue)
 
 
 # 3. Make a statistical model based on (conspecific vs predator cues)
-model <- glmer(Settled ~ conspecific_cue + predator_cue + (1 | Batch) + (1 | Age), data = data, family = binomial)
+'''
+Comments Pascal:
+Batch should be a factor, not integer
+'''
+model <- lme4::glmer(Settled ~ conspecific_cue + predator_cue + (1 | Batch) + (1 | Age), data = data, family = binomial)
 model2 <- glmer(Settled ~ conspecific_cue + predator_cue + biofilm + Shell + (1 | Batch) + (1 | Age), data = data, family = binomial)
 model3 <- glmer(Settled ~ conspecific_cue + Shell + (1 | Batch) + (1 | Age), data = data, family = binomial)
-
+table(data[, c('conspecific_cue', 'predator_cue', 'Batch', 'Age')])
 
 # Testing model assumptions
 testDispersion(model)
