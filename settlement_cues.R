@@ -1,5 +1,5 @@
 # Set working directory where both the R script and the data are stored.
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+setwd("~/GitHub/Conspecific-Predator-Settlement-Cue")
 
 # Load libraries
 require(lme4)
@@ -7,7 +7,7 @@ require(ggeffects)
 require(DHARMa)
 
 # Load the data
-data <- read.csv2(file="Settlement_cue_data1-All_data.csv", check.names=FALSE, sep=",")
+data <- read.csv2(file="cue interactions 3-7.csv", check.names=FALSE, sep=",")
 
 # Convert dates from chr to Date-format
 data[, 'Start_date'] <- as.Date(data[, 'Start_date'])
@@ -18,6 +18,7 @@ colnames(data)[6] <- 'Tray_Number'
 data[, 'Tray_Number'] <- as.factor(data[, 'Tray_Number'])
 data[, 'Cue'] <- as.factor(data[, 'Cue'])
 levels(data[,'Cue'])
+data$Tray_Well <- paste(data$Tray_Number, data$Well)
 
 
 # Does settlement differ between treatments?
@@ -52,12 +53,20 @@ levels(data$conspecific_cue) <- c('absent', 'present', rep('absent', 2), rep('pr
 data['predator_cue'] <- data['Cue']
 levels(data$predator_cue) <- c(rep('absent', 2), 'present', rep('absent', 2), rep('present', 2))
 
+
+
+
 # 3. Make a statistical model
-model <- glmer(settled_30hrs ~ shell * conspecific_cue * predator_cue + (1 | age) + (1 | Batch) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data, family = binomial)
+model <- glmer(settled_30hrs ~ shell * conspecific_cue * predator_cue + (1 | Tray_Well), data = data, family = binomial)
+
+m <- ggpredict(model, terms = c("conspecific_cue", "predator_cue"))
+plot(m)
+summary(model)
+
 # Experiment was unbalanced, lacking data for untreated shells with predator cues present -> repeat analysis with only sterilized shells
 data0 <- data[data[, 'shell'] %in% 'sterilized', ]
 table(data0[, c('conspecific_cue', 'predator_cue')])
-model2 <- glmer(settled_30hrs ~ conspecific_cue * predator_cue + (1 | age) + (1 | Batch) + (1 | Crab) + (1 | Tray_Number) + (1 | Well), data = data, family = binomial)
+model2 <- glmer(settled_30hrs ~ conspecific_cue * predator_cue + (1 | age) + (1 | Batch) + (1 | Crab), data = data0, family = binomial)
 # Testing model assumptions
 testDispersion(model2)
 simulationOutput <- simulateResiduals(fittedModel = model2, plot = F)
