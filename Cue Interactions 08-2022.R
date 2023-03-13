@@ -9,10 +9,11 @@ require(ggeffects)
 require('DHARMa')
 require(stringr)
 
-'''
-Comment Pascal:
-You can use rstudioapi to avoid having to enter absolute paths. It sets the working directory
-to the path in which the script is located. That's quite handy when sharing
+"""
+#Comment Pascal:
+#You can use rstudioapi to avoid having to enter absolute paths. It sets the working directory
+# the path in which the script is located. That's quite handy when sharing
+"""
 
 #set working directory to current directory
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path)) # requires installation of package "rstudioapi"
@@ -89,11 +90,12 @@ data$conspecific_cue <-sub("FALSE", "absent", data$conspecific_cue)
 
 
 # 3. Make a statistical model based on (conspecific vs predator cues)
-'''
-Comments Pascal:
+'''Comments Pascal:
 Batch should be a factor, not integer
 '''
-model <- lme4::glmer(Settled ~ conspecific_cue + predator_cue + (1 | Batch) + (1 | Age), data = data, family = binomial)
+data$Batch <- as.factor(data$Batch)
+
+model <- glm(Settled ~ conspecific_cue + predator_cue + Shell + biofilm, data = data, family = binomial)
 model2 <- glmer(Settled ~ conspecific_cue + predator_cue + biofilm + Shell + (1 | Batch) + (1 | Age), data = data, family = binomial)
 model3 <- glmer(Settled ~ conspecific_cue + Shell + (1 | Batch) + (1 | Age), data = data, family = binomial)
 table(data[, c('conspecific_cue', 'predator_cue', 'Batch', 'Age')])
@@ -104,20 +106,21 @@ simulationOutput <- simulateResiduals(fittedModel = model, plot = F)
 plot(simulationOutput)
 
 # Test model
-summary(model2)
+summary(model)
+plot(model)
 
 # Visualize model predictions
-m <- ggpredict(model, terms = c("conspecific_cue", "predator_cue"))
+m <- ggpredict(model, terms = c("Age"))
 plot(m)
-m2 <- ggpredict(model2, terms = c("Shell", "conspecific_cue"))
+m2 <- ggpredict(model, terms = c("Shell", "conspecific_cue"))
 plot(m2)
-m3 <-ggpredict(model2, terms = c("Shell", "biofilm"))
+m3 <-ggpredict(model, terms = c("Shell", "biofilm"))
 plot(m3)
-m4 <-ggpredict(model2, terms = c("conspecific_cue", "biofilm"))
+m4 <-ggpredict(model, terms = c("conspecific_cue", "biofilm"))
 plot(m4)
-m5 <-ggpredict(model2, terms = c("Shell", "predator_cue"))
+m5 <-ggpredict(model, terms = c("Shell", "predator_cue"))
 plot(m5)
-m6 <-ggpredict(model2, terms = c("biofilm", "predator_cue"))
+m6 <-ggpredict(model, terms = c("biofilm", "predator_cue"))
 plot(m6)
 
 
@@ -144,3 +147,4 @@ plot(m2) +
                      , labels= c("Absent", "Present"),
                      values = c("Black", "4DBBD5B2")) +
   scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1))  #to change the y axis limits
+  

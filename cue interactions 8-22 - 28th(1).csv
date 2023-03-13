@@ -1,0 +1,60 @@
+Date started,Larvae age,Larvae batch ,Tray Number/Well,Cue,Larvae Setteled,Larvae Unsetteled
+8/28/2022,27,1,29a,biofilm_conspecific shell,2,2
+8/28/2022,27,1,29b,biofilm_sterilized shell,0,4
+8/28/2022,27,1,29c,biofilm_conspecific cue_conspecific shell,3,1
+8/28/2022,27,1,29d,biofilm_conspecific cue_sterlized shell,2,2
+8/28/2022,27,1,29e,biofilm_predator cue_conspecific shell,4,1
+8/28/2022,27,1,29f,biofilm_predator cue_sterlized shell,0,4
+8/28/2022,27,1,30a,biofilm_conspecific cue_predator cue_conspecific shell,4,0
+8/28/2022,27,1,30b,biofilm_conspecific cue_predator cue_sterilized shell,0,4
+8/28/2022,27,1,30c,conspecific shell_FSW,0,4
+8/28/2022,27,1,30d,sterilized shell_FSW,0,4
+8/28/2022,27,1,30e,conspecific cue_conspecific shell,5,4
+8/28/2022,27,1,30f,conspecific cue_sterlized shell,0,4
+8/28/2022,27,1,31a,predator cue_conspecific shell,0,4
+8/28/2022,27,1,31b,predator cue_sterlized shell,0,4
+8/28/2022,27,1,31c,conspecific cue_predator cue_conspecific shell,1,2
+8/28/2022,27,1,31d,conspecific cue_predator cue_sterilized shell,0,4
+8/28/2022,27,1,31e,biofilm_conspecific shell,3,1
+8/28/2022,27,1,31f,biofilm_sterilized shell,0,4
+8/28/2022,27,1,32a,biofilm_conspecific cue_conspecific shell,3,0
+8/28/2022,27,1,32b,biofilm_conspecific cue_sterlized shell,1,3
+8/28/2022,27,1,32c,biofilm_predator cue_conspecific shell,1,2
+8/28/2022,27,1,32d,biofilm_predator cue_sterlized shell,1,3
+8/28/2022,27,1,32e,biofilm_conspecific cue_predator cue_conspecific shell,4,0
+8/28/2022,27,1,32f,biofilm_conspecific cue_predator cue_sterilized shell,2,1
+8/28/2022,27,1,33a,conspecific shell_FSW,2,3
+8/28/2022,27,1,33b,sterilized shell_FSW,0,4
+8/28/2022,27,1,33c,conspecific cue_conspecific shell,3,1
+8/28/2022,27,1,33d,conspecific cue_sterlized shell,0,4
+8/28/2022,27,1,33e,predator cue_conspecific shell,4,0
+8/28/2022,27,1,33f,predator cue_sterlized shell,0,4
+8/28/2022,27,1,34a,conspecific cue_predator cue_conspecific shell,1,3
+8/28/2022,27,1,34b,conspecific cue_predator cue_sterilized shell,1,3
+8/28/2022,27,1,34c,biofilm_conspecific shell,1,3
+8/28/2022,27,1,34d,biofilm_sterilized shell,0,4
+8/28/2022,27,1,34e,biofilm_conspecific cue_conspecific shell,4,0
+8/28/2022,27,1,34f,biofilm_conspecific cue_sterlized shell,0,4
+8/28/2022,27,1,35a,biofilm_predator cue_conspecific shell,2,2
+8/28/2022,27,1,35b,biofilm_predator cue_sterlized shell,0,4
+8/28/2022,27,1,35c,biofilm_conspecific cue_predator cue_conspecific shell,3,1
+8/28/2022,27,1,35d,biofilm_conspecific cue_predator cue_sterilized shell,1,2
+8/28/2022,27,1,35e,conspecific shell_FSW,2,2
+8/28/2022,27,1,35f,sterilized shell_FSW,0,4
+8/28/2022,27,1,36a,conspecific cue_conspecific shell,4,0
+8/28/2022,27,1,36b,conspecific cue_sterlized shell,0,4
+8/28/2022,27,1,36c,predator cue_conspecific shell,1,3
+8/28/2022,27,1,36d,predator cue_sterlized shell,0,4
+8/28/2022,27,1,36e,conspecific cue_predator cue_conspecific shell,4,0
+8/28/2022,27,1,36f,conspecific cue_predator cue_sterilized shell,1,3
+8/28/2022,27,1,37a,biofilm_conspecific shell,3,1
+8/28/2022,27,1,37b,biofilm_sterilized shell,1,3
+8/28/2022,27,1,37c,biofilm_conspecific cue_conspecific shell,3,1
+8/28/2022,27,1,37d,biofilm_conspecific cue_sterlized shell,2,2
+8/28/2022,27,1,37e,biofilm_predator cue_conspecific shell,0,3
+8/28/2022,27,1,37f,biofilm_predator cue_sterlized shell,1,3
+8/28/2022,27,1,38a,biofilm_conspecific cue_predator cue_conspecific shell,4,0
+8/28/2022,27,1,38b,biofilm_conspecific cue_predator cue_sterilized shell,1,2
+8/28/2022,27,1,38d,sterilized shell_FSW,0,4
+8/28/2022,27,1,38e,conspecific cue_conspecific shell,3,1
+8/28/2022,27,1,38f,conspecific cue_sterlized shell,3,1
