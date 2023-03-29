@@ -1,0 +1,113 @@
+---
+title: "Cue interactions 05-2022[biofilm/predator]"
+author: "Sarah"
+date: '2023-03-29'
+output: html_document
+---
+
+
+### Cue interactions study May 2022
+  
+  
+#loading packages 
+
+
+```{r}
+library(dplyr)
+library(Matrix)
+library(lme4)
+library(ggeffects)
+library(ggplot2)
+```
+# loading and cleaning data
+
+```{r}
+setwd("~/GitHub/")
+data <- read.csv2(file="biofilm excel 04-22.csv", sep=",")
+data <- select(data, -settled_10h, -unsettled_10h, -settled_20h, -unsettled_20h)
+colnames(data)[5] <- 'Settled'
+colnames(data)[6] <- 'Unattached'
+```
+
+# Calculate response variable from input data
+
+```{r}
+mult_s <- rep(1:nrow(data), data[, 'Settled'])
+mult_u <- rep(1:nrow(data), data[, 'Unattached'])
+data_s <- data[mult_s,]
+data_s[, 'Settled'] <- 1
+data_s <- data_s[, !(names(data_s) %in% c('Unattached'))]
+data_u <- data[mult_u,]
+data_u[, 'Unattached'] <- 0
+data_u <- data_u[, !(names(data_u) %in% c('Settled'))]
+colnames(data_u)[5] <- 'Settled'
+data <- rbind(data_s, data_u)
+```
+
+
+# Adding binary predictor values
+
+```{r}
+data['Biofilm'] <- data['Cue']
+data['conspecific_cue'] <- data['Cue']
+data['predator_cue'] <- data['Cue']
+
+data$Biofilm <- ifelse(grepl("Biofilm", data$Biofilm), TRUE, FALSE)
+data$conspecific_cue <- ifelse(grepl("Conspecific", data$conspecific_cue), TRUE, FALSE)
+data$predator_cue <- ifelse(grepl("Predator", data$predator_cue), TRUE, FALSE)
+
+data$Biofilm <-sub("TRUE", "present", data$Biofilm)
+data$Biofilm <-sub("FALSE", "absent", data$Biofilm)
+data$predator_cue <-sub("TRUE", "present", data$predator_cue)
+data$predator_cue <-sub("FALSE", "absent", data$predator_cue)
+data$conspecific_cue <-sub("TRUE", "present", data$conspecific_cue)
+data$conspecific_cue <-sub("FALSE", "absent", data$conspecific_cue)
+```
+
+# Making the model 
+
+```{r}
+model <- glmer(Settled ~ conspecific_cue * predator_cue + Biofilm + (1 | Larvae.age), data = data, family = binomial)
+summary(model)
+```
+
+
+```{r}
+m <- ggpredict(model, terms = c("conspecific_cue", "predator_cue"))
+m2 <- ggpredict(model, terms = c("conspecific_cue", "Biofilm"))
+m3 <- ggpredict(model, terms = c("Biofilm", "predator_cue"))
+
+
+plot(m) + 
+  labs(x = "Conspecific Cue", 
+       y= 'Larvae Settled (%)',
+       title = "") +
+  guides(color = guide_legend(title = 'Predator Cue')) +
+  scale_color_manual(breaks = c("absent", "present")
+                     , labels= c("Absent", "Present"),
+                     values = c("dodgerblue3", "orangered4"))+
+  scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1))
+
+
+plot(m2) +
+  labs(x = "Conspecific Cue", 
+       y= 'Larvae Settled (%)',
+       title = "") +
+  guides(color = guide_legend(title = 'Biofilm')) +
+  scale_color_manual(breaks = c("absent", "present")
+                     , labels= c("Absent", "Present"),
+                     values = c("dodgerblue3", "chartreuse4")) +
+  scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1))
+
+
+
+plot(m3) +
+  labs(x = 'Biofilm', 
+       y= 'Larvae Settled (%)',
+       title = "") +
+  guides(color = guide_legend(title = "Predator Cue")) +
+  scale_color_manual(breaks = c("absent", "present")
+                     , labels= c("Absent", "Present"),
+                     values = c("chartreuse4", "orangered4"))+
+scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1))
+```
