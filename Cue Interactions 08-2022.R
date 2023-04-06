@@ -1,4 +1,3 @@
-setwd("~/GitHub")
 install.packages('lme4')
 install.packages('Matrix')
 install.packages('ggeffects')
@@ -11,6 +10,7 @@ require(stringr)
 
 setwd("~/GitHub/Conspecific-Predator-Settlement-Cue")
 data <- read.csv2(file="Cue interactions 08-2022.csv", sep=",")
+
 
 # Convert Cue and Tray Number to factor
 colnames(data)[4] <- 'Well_Number'
@@ -84,6 +84,8 @@ data$conspecific_cue <-sub("FALSE", "absent", data$conspecific_cue)
 
 # 3. Make a statistical model based on (conspecific vs predator cues)
 model <- glmer(Settled ~ conspecific_cue * predator_cue + Shell +  biofilm + (1 | Batch) + (1 | Age), data = data, family = binomial)
+model2 <- glmer(Settled ~ conspecific_cue * predator_cue + Shell *  biofilm + (1 | Batch) + (1 | Age), data = data, family = binomial)
+
 
 # Testing model assumptions
 testDispersion(model)
@@ -93,7 +95,7 @@ plot(simulationOutput)
 
 # Test model
 summary(model)
-
+summary(model2)
 
 # Visualize model predictions
 
@@ -122,6 +124,9 @@ plot(m) +
   scale_color_manual(breaks = c("absent", "present")
                      , labels= c("Absent", "Present"),
                      values = c("dodgerblue3", "orangered4"))+
+  theme(legend.title = element_text(size = 15),
+        axis.title = element_text(size = 15), 
+        axis.text = element_text(size = 15))+
 scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,.5))  #to change the y axis limits
  
 #theme(axis.text = element_text(face = 'bold', size = 10)) +
@@ -134,6 +139,9 @@ plot(m2) +
   scale_color_manual(breaks = c("absent", "present")
                      , labels= c("Absent", "Present"),
                      values = c("Khaki2", "dodgerblue3"))+
+  theme(legend.title = element_text(size = 15),
+        axis.title = element_text(size = 15), 
+        axis.text = element_text(size = 15))+
   scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1))  #to change the y axis limits
 
 
@@ -145,6 +153,9 @@ plot(m3) +
   scale_color_manual(breaks = c("absent", "present")
                      , labels= c("Absent", "Present"),
                      values = c("Khaki2", "chartreuse4")) +
+  theme(legend.title = element_text(size = 15),
+        axis.title = element_text(size = 15), 
+        axis.text = element_text(size = 15))+
   scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1))  #to change the y axis limits
 
 
@@ -156,6 +167,9 @@ plot(m4) +
   scale_color_manual(breaks = c("absent", "present")
                      , labels= c("Absent", "Present"),
                      values = c("dodgerblue3", "chartreuse4")) +
+  theme(legend.title = element_text(size = 15),
+        axis.title = element_text(size = 15), 
+        axis.text = element_text(size = 15))+
   scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1))  #to change the y axis limits
 
 plot(m5) +
@@ -166,6 +180,9 @@ plot(m5) +
   scale_color_manual(breaks = c("absent", "present")
                      , labels= c("Absent", "Present"),
                      values = c("Khaki2", "orangered4"))+
+  theme(legend.title = element_text(size = 15),
+        axis.title = element_text(size = 15), 
+        axis.text = element_text(size = 15))+
   scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1))  #to change the y axis limits
 
 
@@ -178,6 +195,9 @@ plot(m6) +
   scale_color_manual(breaks = c("absent", "present")
                      , labels= c("Absent", "Present"),
                      values = c("chartreuse4", "orangered4"))+
+  theme(legend.title = element_text(size = 15),
+        axis.title = element_text(size = 15), 
+        axis.text = element_text(size = 15))+
   scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1))  #to change the y axis limits
 
 
@@ -185,10 +205,22 @@ plot(m6) +
 #visualizing whole data set 
 
 levels(data$Cue) <- c("B-CC-CS", "B-CC-PC-CS", "B-CC-PC-SS", "B-CC-SS", "B-CS", "B-PC-CS", "B-PC-SS", "B-SS", "CC-CS", "CC-PC-CS", "CC-PC-SS", "CC-SS", "CS", "PC-CS", "PC-SS", "SS")
-model3 <- glmer(Settled ~ Cue + (1 | Batch) + (1 | Age), data = data, family = binomial)
-m0<- ggpredict(model3, terms = ('Cue'))
+model2 <- glmer(Settled ~ Cue + (1 | Batch) + (1 | Age), data = data, family = binomial)
+m0<- ggpredict(model2, terms = ('Cue'))
 plot(m0)
 
 car::Anova(model3, type=2)
 marginal <-lsmeans(model3, ~ Cue)
 pairs(marginal, adjust="tukey")
+
+plot(m0) +
+  labs(x = 'Cue', 
+       y= 'Larvae Settled (%)',
+       title = "") +
+  scale_color_manual(breaks = c("absent", "present")
+                     , labels= c("Absent", "Present"),
+                     values = c("chartreuse4", "orangered4"))+
+  theme(legend.title = element_text(size = 20),
+        axis.title = element_text(size = 20), 
+        axis.text = element_text(size = 20))+
+  scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1))
