@@ -67,7 +67,10 @@ data$conspecific_cue <-sub("FALSE", "absent", data$conspecific_cue)
 # Making the model 
 
 ```{r}
-model <- glmer(Settled ~ conspecific_cue * predator_cue + Biofilm + (1 | Larvae.age), data = data, family = binomial)
+#model <- glmer(Settled ~ conspecific_cue * predator_cue + Biofilm + (1 | Larvae.age), data = data, family = binomial)
+#summary(model)
+
+model <- glmer(Settled ~ conspecific_cue + predator_cue + Biofilm + conspecific_cue:predator_cue + conspecific_cue:Biofilm + predator_cue:Biofilm + (1 | Larvae.age), data = data, family = binomial)
 summary(model)
 ```
 
