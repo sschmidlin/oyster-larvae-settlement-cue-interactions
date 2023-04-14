@@ -76,7 +76,7 @@ summary(model)
 ### plots
 ```{r}
 m <- ggpredict(model, terms = c("conspecific_cue", "predator_cue"))
-plot(m) +
+plot(m, connect.lines = TRUE) +
   labs(x = 'Conspecific Cue', 
        y= 'Larvae Settled (%)',
        title = "") +

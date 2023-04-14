@@ -56,13 +56,13 @@ summary(model3)
 
 #visualizing model
 m <- ggpredict(model, terms = c("predator_cue", "conspecific_cue"))
-plot(m)
+plot(m, connect.lines = TRUE)
 m2 <- ggpredict(model2, terms = c("Biofilm", "conspecific_cue"))
-plot(m2)
+plot(m2, connect.lines = TRUE)
 m3 <- ggpredict(model3, terms = c("conspecific_cue", "predator_cue"))
-plot(m3)
+plot(m3, connect.lines = TRUE)
 m4 <- ggpredict(model3, terms = c("conspecific_cue", "Biofilm"))
-plot(m4)
+plot(m4, connect.lines = TRUE)
 m5 <- ggpredict(model3, terms = c("predator_cue", "Biofilm"))
-plot(m5)
+plot(m5, connect.lines = TRUE)
 

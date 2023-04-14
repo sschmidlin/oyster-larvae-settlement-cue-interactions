@@ -20,7 +20,7 @@ library(ggplot2)
 
 ### loading and cleaning data
 ```{r}
-setwd("~/GitHub/Conspecific-Predator-Settlement-Cue")
+#setwd("~/GitHub/Conspecific-Predator-Settlement-Cue")
 data <- read.csv2(file="Experiment 05-2022[repeat study].csv", sep=",")
 data <- select(data, -settled_10hr, -unattached_10hr, -settled_20hr, -unattached_20hr)
 colnames(data)[5] <- 'Settled'
@@ -76,7 +76,7 @@ m3 <- ggpredict(model, terms = c("Shell", "predator_cue"))
 ### plots 
 
 ```{r}
-plot(m) +
+plot(m, connect.lines = TRUE) +
   labs(x = 'Conspecific Cue', 
        y= 'Larvae Settled (%)',
        title = "") +
@@ -87,7 +87,7 @@ plot(m) +
   scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1))
 
 
-plot(m2) +
+plot(m2, connect.lines = TRUE) +
   labs(x = 'Shell', 
        y= 'Larvae Settled (%)',
        title = "") +
@@ -98,7 +98,7 @@ plot(m2) +
   scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1)) 
 
 
-plot(m3) +
+plot(m3, connect.lines = TRUE) +
   labs(x = 'Shell', 
        y= 'Larvae Settled (%)',
        title = "") +

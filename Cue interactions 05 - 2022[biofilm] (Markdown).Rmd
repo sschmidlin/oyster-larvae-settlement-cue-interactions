@@ -22,7 +22,7 @@ library(ggplot2)
 # loading and cleaning data
 
 ```{r}
-setwd("~/GitHub/")
+#setwd("~/GitHub/")
 data <- read.csv2(file="biofilm excel 04-22.csv", sep=",")
 data <- select(data, -settled_10h, -unsettled_10h, -settled_20h, -unsettled_20h)
 colnames(data)[5] <- 'Settled'
@@ -81,7 +81,7 @@ m2 <- ggpredict(model, terms = c("conspecific_cue", "Biofilm"))
 m3 <- ggpredict(model, terms = c("Biofilm", "predator_cue"))
 
 
-plot(m) + 
+plot(m, connect.lines = TRUE) + 
   labs(x = "Conspecific Cue", 
        y= 'Larvae Settled (%)',
        title = "") +
@@ -92,7 +92,7 @@ plot(m) +
   scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1))
 
 
-plot(m2) +
+plot(m2, connect.lines = TRUE) +
   labs(x = "Conspecific Cue", 
        y= 'Larvae Settled (%)',
        title = "") +
@@ -104,7 +104,7 @@ plot(m2) +
 
 
 
-plot(m3) +
+plot(m3, connect.lines = TRUE) +
   labs(x = 'Biofilm', 
        y= 'Larvae Settled (%)',
        title = "") +

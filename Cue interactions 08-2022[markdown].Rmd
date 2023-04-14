@@ -21,7 +21,7 @@ library(DHARMa)
 ### loading and cleaning data 
 
 ```{r}
-setwd("~/GitHub/Conspecific-Predator-Settlement-Cue")
+#setwd("~/GitHub/Conspecific-Predator-Settlement-Cue")
 data <- read.csv2(file="Cue interactions 08-2022.csv", sep=",")
 colnames(data)[4] <- 'Well_Number'
 colnames(data)[2] <- 'Age'
@@ -94,7 +94,7 @@ m4 <-ggpredict(model, terms = c("biofilm", "conspecific_cue"))
 m5 <-ggpredict(model, terms = c("Shell", "predator_cue"))
 m6 <-ggpredict(model, terms = c("biofilm", "predator_cue"))
 
-plot(m) + 
+plot(m, connect.lines = TRUE) + 
   labs(x = 'Conspecific Cue', 
        y= 'Larvae Settled (%)',
        title = "") +
@@ -105,7 +105,7 @@ plot(m) +
 scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,.5)) 
 
 
-plot(m2) + 
+plot(m2, connect.lines = TRUE) + 
   labs(x = 'Shell', 
        y= 'Larvae Settled (%)',
        title = "") +
@@ -116,7 +116,7 @@ plot(m2) +
   scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1)) 
 
 
-plot(m3) +
+plot(m3, connect.lines = TRUE) +
   labs(x = "Shell", 
        y= 'Larvae Settled (%)',
        title = "") +
@@ -127,7 +127,7 @@ plot(m3) +
   scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1))  
 
 
-plot(m4) +
+plot(m4, connect.lines = TRUE) +
   labs(x = 'Conspecific Cue', 
        y= 'Larvae Settled (%)',
        title = "") +
@@ -137,7 +137,7 @@ plot(m4) +
                      values = c("dodgerblue3", "chartreuse4")) +
   scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1)) 
 
-plot(m5) +
+plot(m5, connect.lines = TRUE) +
   labs(x = 'Shell', 
        y= 'Larvae Settled (%)',
        title = "") +
@@ -149,7 +149,7 @@ plot(m5) +
 
 
 
-plot(m6) +
+plot(m6, connect.lines = TRUE) +
   labs(x = 'Biofilm', 
        y= 'Larvae Settled (%)',
        title = "") +
