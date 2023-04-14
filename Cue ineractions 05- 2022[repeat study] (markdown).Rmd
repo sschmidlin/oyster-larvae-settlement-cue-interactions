@@ -61,8 +61,13 @@ data$conspecific_cue <-sub("FALSE", "absent", data$conspecific_cue)
 ### Making the model 
 
 ```{r}
-model <-glmer(Settled ~ conspecific_cue * predator_cue + Shell + (1 | Larvae.age) + (1 | Larvae.batch), data = data, family = binomial)
+#model <-glmer(Settled ~ conspecific_cue * predator_cue + Shell + (1 | Larvae.age) + (1 | Larvae.batch), data = data, family = binomial)
+#summary(model)
+
+# Model with all first order interaction terms
+model <-glmer(Settled ~ conspecific_cue + predator_cue + Shell + conspecific_cue:predator_cue + conspecific_cue:Shell + predator_cue:Shell + (1 | Larvae.age) + (1 | Larvae.batch), data = data, family = binomial)
 summary(model)
+
 m <- ggpredict(model, terms = c("conspecific_cue", "predator_cue"))
 m2 <- ggpredict(model, terms = c("Shell", "conspecific_cue"))
 m3 <- ggpredict(model, terms = c("Shell", "predator_cue"))
