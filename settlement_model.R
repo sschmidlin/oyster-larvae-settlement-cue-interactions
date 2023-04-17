@@ -4,11 +4,11 @@ library(ggplot2)
 A=seq(from = 0, to = 1, by = 0.01)
 # Define a function (linear, exponential, etc.) for the positive cue
 func1 <- function(x) {
-  x
+  exp(x)
 }
 A=sapply(A, func1)
 # Define a correction factor for the positive cue
-k1=3
+k1=1
 
 # Define a vector with all possible values of the positive cue (from 0 to -1)
 #B=rev(seq(from = -1, to = 0, by = 0.01))
