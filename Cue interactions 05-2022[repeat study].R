@@ -47,9 +47,11 @@ data$conspecific_cue <-sub("FALSE", "absent", data$conspecific_cue)
 
 
 #making model
-model <- glmer(Settled ~ conspecific_cue + predator_cue + (1 | Larvae.batch) + (1 | Larvae.age), data = data, family = binomial)
+model <-glmer(Settled ~ conspecific_cue + predator_cue + Shell + conspecific_cue:predator_cue + conspecific_cue:Shell + predator_cue:Shell + (1 | Larvae.age) + (1 | Larvae.batch), data = data, family = binomial)
+model <- glmer(Settled ~ conspecific_cue * predator_cue + (1 | Larvae.batch) + (1 | Larvae.age), data = data, family = binomial)
 model2 <-glmer(Settled ~ Shell + conspecific_cue + (1 | Larvae.batch) + (1 | Larvae.age), data = data, family = binomial)
 model3 <-glmer(Settled ~ Shell + predator_cue + (1 | Larvae.batch) + (1 | Larvae.age), data = data, family = binomial)
+
 summary(model)
 summary(model2)
 summary(model3)
