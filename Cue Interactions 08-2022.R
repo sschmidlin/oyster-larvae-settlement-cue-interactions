@@ -20,6 +20,8 @@ colnames(data)[5] <- 'Cue'
 colnames(data)[6] <- 'Settled'
 colnames(data)[7] <- 'Unattached'
 data[, 'Cue'] <- as.factor(data[, 'Cue'])
+data[, 'Age'] <- as.factor(data[,'Age'])
+data[, 'Batch'] <-as.factor(data[,'Batch'])
 
 # Type of model: generalized linear mixed-effect model; response variable is binary -> logistic regression
 # Binary response variable: calculate per larva and save as "settlement"
@@ -83,8 +85,9 @@ data$conspecific_cue <-sub("FALSE", "absent", data$conspecific_cue)
 
 
 # 3. Make a statistical model based on (conspecific vs predator cues)
-model <- glmer(Settled ~ conspecific_cue * predator_cue + Shell +  biofilm + (1 | Batch) + (1 | Age), data = data, family = binomial)
-model2 <- glmer(Settled ~ conspecific_cue * predator_cue + Shell *  biofilm + (1 | Batch) + (1 | Age), data = data, family = binomial)
+
+model <- glmer(Settled ~ conspecific_cue + predator_cue + Shell +  biofilm + conspecific_cue:predator_cue + conspecific_cue:Shell + conspecific_cue:biofilm + predator_cue:Shell + predator_cue:biofilm + Shell:biofilm + (1 | Batch) + (1 | Age), data = data, family = binomial)
+model3 <- glmer(Settled ~ conspecific_cue * predator_cue + Shell *  biofilm + (1 | Batch) + (1 | Age), data = data, family = binomial)
 
 
 # Testing model assumptions
@@ -112,10 +115,20 @@ plot(m5)
 m6 <-ggpredict(model, terms = c("biofilm", "predator_cue"))
 plot(m6)
 
-
-
+m7 <-ggpredict(model, terms = c("biofilm", "predator_cue", "Shell","conspecific_cue"))
+plot(m7)
 
 #adjusting astestics
+
+plot(m, connect.lines = TRUE) + 
+  labs(x = 'Conspecific Cue', 
+       y= 'Larvae Settled (%)',
+       title = "") +
+  guides(color = guide_legend(title = "Predator Cue")) +
+  scale_color_manual(breaks = c("absent", "present")
+                     , labels= c("Absent", "Present"),
+                     values = c("dodgerblue3", "orangered4"))+
+  scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1)) 
 plot(m) + 
   labs(x = 'Conspecific Cue', 
        y= 'Larvae Settled (%)',
@@ -144,6 +157,15 @@ plot(m2) +
         axis.text = element_text(size = 15))+
   scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1))  #to change the y axis limits
 
+plot(m3, connect.lines = TRUE) +
+  labs(x = "Shell", 
+       y= 'Larvae Settled (%)',
+       title = "") +
+  guides(color = guide_legend(title = 'Biofilm')) +
+  scale_color_manual(breaks = c("absent", "present")
+                     , labels= c("Absent", "Present"),
+                     values = c("Khaki2", "chartreuse4")) +
+  scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1))  
 
 plot(m3) +
   labs(x = "Shell", 
@@ -185,7 +207,15 @@ plot(m5) +
         axis.text = element_text(size = 15))+
   scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1))  #to change the y axis limits
 
-
+plot(m6, connect.lines = TRUE) +
+  labs(x = 'Biofilm', 
+       y= 'Larvae Settled (%)',
+       title = "") +
+  guides(color = guide_legend(title = "Predator Cue")) +
+  scale_color_manual(breaks = c("absent", "present")
+                     , labels= c("Absent", "Present"),
+                     values = c("chartreuse4", "orangered4"))+
+  scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1))
 
 plot(m6) +
   labs(x = 'Biofilm', 
@@ -209,8 +239,8 @@ model2 <- glmer(Settled ~ Cue + (1 | Batch) + (1 | Age), data = data, family = b
 m0<- ggpredict(model2, terms = ('Cue'))
 plot(m0)
 
-car::Anova(model3, type=2)
-marginal <-lsmeans(model3, ~ Cue)
+car::Anova(model2, type=2)
+marginal <-lsmeans(model2, ~ Cue)
 pairs(marginal, adjust="tukey")
 
 plot(m0) +
@@ -222,5 +252,11 @@ plot(m0) +
                      values = c("chartreuse4", "orangered4"))+
   theme(legend.title = element_text(size = 20),
         axis.title = element_text(size = 20), 
-        axis.text = element_text(size = 20))+
+        axis.text = element_text(size = 10),
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1))
+
+
+#subseting only when conspecific cue is present
+
+data_con <- subset("conspecific")

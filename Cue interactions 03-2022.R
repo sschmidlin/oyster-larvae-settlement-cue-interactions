@@ -46,17 +46,31 @@ data$predator_cue <-sub("FALSE", "absent", data$predator_cue)
 data$conspecific_cue <-sub("TRUE", "present", data$conspecific_cue)
 data$conspecific_cue <-sub("FALSE", "absent", data$conspecific_cue)
 
+#taking out all data with con shell 
+new_data <- subset(data, Shell == "sterilized")
+
 
 #making model
-model <- glmer(Settled ~ predator_cue + conspecific_cue +(1 | Larvae.batch) + (1 | Larvae.age) + (1 | Crab), data = data, family = binomial)
-model2 <-glmer(Settled ~ Shell + conspecific_cue + (1 | Larvae.batch) + (1 | Larvae.age) + (1 | Crab), data = data, family = binomial)
+model <- glmer(Settled ~ predator_cue * conspecific_cue + (1 | Larvae.batch) + (1 | Larvae.age) + (1 | Crab), data = data, family = binomial)
+model2 <-glmer(Settled ~ conspecific_cue * predator_cue +(1 | Shell) + (1 | Larvae.batch) + (1 | Larvae.age) + (1 | Crab), data = data, family = binomial)
+model3 <-glmer(Settled ~ predator_cue * conspecific_cue + (1 | Larvae.batch) + (1 | Larvae.age) + (1 | Crab), data = new_data, family = binomial)
 
-summary(model)
+summary(model3)
 
 #visualizing model
-m <- ggpredict(model, terms = c("predator_cue", "conspecific_cue"))
+m <- ggpredict(model3, terms = c("predator_cue", "conspecific_cue"))
 plot(m)
 m2 <- ggpredict(model2, terms = c("Shell", "conspecific_cue"))
 plot(m2)
 
+m <- ggpredict(model, terms = c("conspecific_cue", "predator_cue"))
+plot(m, connect.lines = TRUE) +
+  labs(x = 'Conspecific Cue', 
+       y= 'Larvae Settled (%)',
+       title = "") +
+  guides(color = guide_legend(title = "Predator Cue")) +
+  scale_color_manual(breaks = c("absent", "present")
+                     , labels= c("Absent", "Present"),
+                     values = c("dodgerblue3", "orangered4")) +
+  scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1))
 

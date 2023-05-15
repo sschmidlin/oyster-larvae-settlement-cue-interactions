@@ -48,11 +48,12 @@ data$conspecific_cue <-sub("FALSE", "absent", data$conspecific_cue)
 
 
 #making model
-model <- glmer(Settled ~ predator_cue + conspecific_cue +(1 | larvae.batch) + (1 | Larvae.age), data = data, family = binomial)
-model2 <-glmer(Settled ~ Biofilm + conspecific_cue + (1 | larvae.batch) + (1 | Larvae.age), data = data, family = binomial)
-model3 <-glmer(Settled ~ conspecific_cue + predator_cue + Biofilm + conspecific_cue:predator_cue + conspecific_cue:Biofilm + predator_cue:Biofilm + (1 | larvae.batch) + (1 | Larvae.age), data = data, family = binomial)
+model <- glmer(Settled ~ conspecific_cue + predator_cue + Biofilm + conspecific_cue:predator_cue + conspecific_cue:Biofilm + predator_cue:Biofilm + (1 | Larvae.age), data = data, family = binomial)
+model2 <- glmer(Settled ~ predator_cue + conspecific_cue +(1 | larvae.batch) + (1 | Larvae.age), data = data, family = binomial)
+model3 <-glmer(Settled ~ Biofilm + conspecific_cue + (1 | larvae.batch) + (1 | Larvae.age), data = data, family = binomial)
+model4 <-glmer(Settled ~ conspecific_cue + predator_cue + Biofilm + conspecific_cue:predator_cue + conspecific_cue:Biofilm + predator_cue:Biofilm + (1 | larvae.batch) + (1 | Larvae.age), data = data, family = binomial)
 
-summary(model3)
+summary(model)
 
 #visualizing model
 m <- ggpredict(model, terms = c("predator_cue", "conspecific_cue"))
