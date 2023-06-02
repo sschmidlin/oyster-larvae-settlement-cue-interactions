@@ -20,7 +20,7 @@ library(ggplot2)
 
 ### loading and cleaning data
 ```{r}
-#setwd("~/GitHub/Conspecific-Predator-Settlement-Cue")
+setwd("~/GitHub/Conspecific-Predator-Settlement-Cue")
 data <- read.csv2(file="Experiment 05-2022[repeat study].csv", sep=",")
 data <- select(data, -settled_10hr, -unattached_10hr, -settled_20hr, -unattached_20hr)
 colnames(data)[5] <- 'Settled'

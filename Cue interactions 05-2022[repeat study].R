@@ -13,6 +13,7 @@ library(ggeffects)
 #deleting 10hr, 20hr data
 data <- select(data, -settled_20hr, -unattached_20hr, -settled_20hr, -unattached_20hr)
 data <- select(data, -settled_10hr, -unattached_10hr, -settled_20hr, -unattached_20hr)
+data <- select(data, -settled_30hr, -unattached_30hr, -settled_30hr, -unattached_30hr)
 colnames(data)[5] <- 'Settled'
 colnames(data)[6] <- 'Unattached'
 

@@ -60,7 +60,7 @@ summary(model3)
 #visualizing model
 m <- ggpredict(model3, terms = c("predator_cue", "conspecific_cue"))
 plot(m)
-m2 <- ggpredict(model2, terms = c("Shell", "conspecific_cue"))
+m2 <- ggpredict(model2, terms = c("predator_cue", "conspecific_cue"))
 plot(m2)
 
 m <- ggpredict(model, terms = c("conspecific_cue", "predator_cue"))
