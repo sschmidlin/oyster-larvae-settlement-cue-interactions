@@ -74,6 +74,17 @@ data_aug$conspecific_cue <-sub("TRUE", "Present", data_aug$conspecific_cue)
 data_aug$conspecific_cue <-sub("FALSE", "Absent", data_aug$conspecific_cue)
 
 
+#make levels the same name 
+data$Cue <- as.factor(data$Cue) 
+levels(data$Cue)[levels(data$Cue) == "conspecific shell"] <- "conspecific shell_FSW"
+levels(data$Cue)[levels(data$Cue) == "conspecific shell_conspecific cue"] <- "conspecific cue_conspecific shell"
+levels(data$Cue)[levels(data$Cue) == "conspecific shell_predator cue"] <- "predator cue_conspecific shell"
+levels(data$Cue)[levels(data$Cue) == "steralized shell"] <- "sterilized shell_FSW"
+levels(data$Cue)[levels(data$Cue) == "steralized shell_conspecific cue"] <- "conspecific cue_sterlized shell"
+levels(data$Cue)[levels(data$Cue) == "steralized shell_conspecific cue_predator cue"] <- "conspecific cue_predator cue_sterilized shell"
+levels(data$Cue)[levels(data$Cue) == "steralized shell_predator cue"] <- "predator cue_sterlized shell"
+
+
 #combining data 
 data_aug_new = data_aug[,-1] #remove "Date.started" variable
 colnames(data_aug_new) = c("Larvae.age", "Larvae.batch", "Tray.Number", "Cue", "Settled", "Shell", "conspecific_cue", "predator_cue", "biofilm")
@@ -90,9 +101,9 @@ levels(data_aug_new$Larvae.batch) = c("3", "4")
 data_combined = rbind(data_may_new, data_aug_new)
 
 # combined model
-model <-glmer(Settled ~ conspecific_cue + predator_cue + conspecific_cue:predator_cue + (1|Shell) + (1 | biofilm) + (1 | Larvae.batch) + (1 | exp), data = data_combined, family = binomial)
-model1 <-glmer(Settled ~ predator_cue + Shell + predator_cue:Shell + (1|conspecific_cue) + (1 | biofilm) + (1 | Larvae.batch) + (1 | exp), data = data_combined, family = binomial)
-model2 <-glmer(Settled ~ conspecific_cue + Shell + conspecific_cue:Shell + (1|predator_cue) + (1 | biofilm) + (1 | Larvae.batch) + (1 | exp), data = data_combined, family = binomial)
+model <-glmer(Settled ~ conspecific_cue + predator_cue + conspecific_cue:predator_cue + (1|Shell) + (1 | biofilm) + (1 | Larvae.batch), data = data_combined, family = binomial)
+model1 <-glmer(Settled ~ predator_cue + Shell + predator_cue:Shell + (1|conspecific_cue) + (1 | biofilm) + (1 | Larvae.batch), data = data_combined, family = binomial)
+model2 <-glmer(Settled ~ conspecific_cue + Shell + conspecific_cue:Shell + (1|predator_cue) + (1 | biofilm) + (1 | Larvae.batch), data = data_combined, family = binomial)
 
 summary(model)
 summary(model1)
@@ -147,3 +158,17 @@ plot(m2) +
   scale_color_manual(values = c("Khaki2","dodgerblue3"))+
   theme(axis.text = element_text(size = 12), axis.title = element_text(size = 12))+
   scale_y_continuous(labels= function(x) paste0(x*100), limits = c(0,1))
+
+
+#figure out percent settled per treatment 
+
+new_df <- data_combined[, c("Cue", "Settled")]
+levels(new_df$Cue)
+subset_data <- new_df[new_df$Cue == "predator cue_sterlized shell", ]
+subset_data$Settled <- as.numeric(subset_data$Settled)
+sum(subset_data$Settled)
+level <- "0"
+level_count <- sum(subset_data$Settled == level)
+print(level_count)
+(sum(subset_data$Settled))/(print(level_count))
+
