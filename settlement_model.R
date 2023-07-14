@@ -1,10 +1,12 @@
 library(ggplot2)
 
+# Figure A: additive model
+
 # Define a vector with all possible values of the positive cue (from 0 to 1)
 A=seq(from = 0, to = 1, by = 0.01)
 # Define a function (linear, exponential, etc.) for the positive cue
 func1 <- function(x) {
-  exp(x)
+  x
 }
 A=sapply(A, func1)
 # Define a correction factor for the positive cue
@@ -19,7 +21,7 @@ func2 <- function(x) {
 B=sapply(B, func2)
 summary(B)
 # Define a correction factor for the positive cue
-k2=10
+k2=4
 
 # Generate a matrix with all possible combinations of positive and negative cue values
 L = matrix(nrow = length(A), ncol = length(B))
@@ -36,14 +38,181 @@ for (i in 1:length(A)) {
 df <- reshape2::melt(L)
 
 # Print the model result
-ggplot(df, aes(x = Var2, y = Var1, fill = value)) +
+figureA = ggplot(df, aes(x = Var2, y = Var1, fill = value)) +
   geom_tile() +
   scale_fill_gradient2(low = "darkblue", mid = "lightblue", high = "green", midpoint=0.5) +
-  labs(x = "importance of negative cue", y = "importance of positive cue", fill="Probability of settlement") +
+  labs(x = "Strength of negative cue", y = "Strength of positive cue", fill="Probability of settlement") +
   coord_fixed() +
   geom_contour(aes(z=value), colour = "white") +
+  ggtitle("Equal ranking: Weighted choice") +
   theme_minimal()
 
+                    
+# Figure B: ranking model, optimistic scenario
+
+# Define a vector with all possible values of the positive cue (from 0 to 1)
+A=seq(from = 0, to = 1, by = 0.01)
+# Define a function (linear, exponential, etc.) for the positive cue
+func1 <- function(x) {
+  exp(x)
+}
+A=sapply(A, func1)
+# Define a correction factor for the positive cue
+k1=1
+ 
+# Define a vector with all possible values of the positive cue (from 0 to -1)
+B=seq(from = 0, to = 1, by = 0.01)
+# Define a function (linear, exponential, etc.) for the negative cue
+func2 <- function(x) {
+  x
+}
+B=sapply(B, func2)
+summary(B)
+# Define a correction factor for the positive cue
+k2=2
+                    
+# Generate a matrix with all possible combinations of positive and negative cue values
+L = matrix(nrow = length(A), ncol = length(B))
+                    
+# Run the model
+for (i in 1:length(A)) {
+  for (j in 1:length(B)) {
+    L[i,j] = 1 / (1 + exp(-(A[i]*k1 - B[j]*k2))) # first cue positive, second cue negative
+                        #L[i,j] = 1 / (1 + exp(-(A[i]*k1 + B[j]*k2))) # both cues positive
+  }
+}
+                    
+# Change the format of the result matrix for printing
+df <- reshape2::melt(L)
+                    
+# Print the model result
+figureB = ggplot(df, aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "darkblue", mid = "lightblue", high = "green", midpoint=0.5) +
+  labs(x = "Strength of negative cue", y = "Strength of positive cue", fill="Probability of settlement") +
+  coord_fixed() +
+  geom_contour(aes(z=value), colour = "white") +
+  ggtitle("Highly ranked pos. cue: Optimistic choice") +
+  theme_minimal()
+
+
+# Figure C: ranking model, pessimistic scenario
+
+# Figure B: ranking model
+
+# Define a vector with all possible values of the positive cue (from 0 to 1)
+A=seq(from = 0, to = 1, by = 0.01)
+# Define a function (linear, exponential, etc.) for the positive cue
+func1 <- function(x) {
+  log(x)
+}
+A=sapply(A, func1)
+# Define a correction factor for the positive cue
+k1=2
+
+# Define a vector with all possible values of the positive cue (from 0 to -1)
+B=seq(from = 0, to = 1, by = 0.01)
+# Define a function (linear, exponential, etc.) for the negative cue
+func2 <- function(x) {
+  x
+}
+B=sapply(B, func2)
+summary(B)
+# Define a correction factor for the positive cue
+k2=2
+
+# Generate a matrix with all possible combinations of positive and negative cue values
+L = matrix(nrow = length(A), ncol = length(B))
+
+# Run the model
+for (i in 1:length(A)) {
+  for (j in 1:length(B)) {
+    L[i,j] = (1 / (1 + exp(-(A[i]*k1 - B[j]*k2))))*2 # first cue positive, second cue negative
+    #L[i,j] = 1 / (1 + exp(-(A[i]*k1 + B[j]*k2))) # both cues positive
+  }
+}
+
+# Change the format of the result matrix for printing
+df <- reshape2::melt(L)
+
+# Print the model result
+figureC = ggplot(df, aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "darkblue", mid = "lightblue", high = "green", midpoint=0.5) +
+  labs(x = "Strength of negative cue", y = "Strength of positive cue", fill="Probability of settlement") +
+  coord_fixed() +
+  geom_contour(aes(z=value), colour = "white") +
+  ggtitle("Highly ranked neg. cue: Pessimistic choice") +
+  theme_minimal()
+
+
+# Figure D: two positive cues
+# Figure B: ranking model
+
+# Define a vector with all possible values of the positive cue (from 0 to 1)
+A=seq(from = 0, to = 1, by = 0.01)
+# Define a function (linear, exponential, etc.) for the positive cue
+func1 <- function(x) {
+  x
+}
+A=sapply(A, func1)
+# Define a correction factor for the positive cue
+k1=4
+
+# Define a vector with all possible values of the positive cue (from 0 to -1)
+B=seq(from = 0, to = 1, by = 0.01)
+# Define a function (linear, exponential, etc.) for the negative cue
+func2 <- function(x) {
+  x
+}
+B=sapply(B, func2)
+summary(B)
+# Define a correction factor for the positive cue
+k2=4
+
+# Generate a matrix with all possible combinations of positive and negative cue values
+L = matrix(nrow = length(A), ncol = length(B))
+
+# Run the model
+for (i in 1:length(A)) {
+  for (j in 1:length(B)) {
+    #L[i,j] = 1 / (1 + exp(-(A[i]*k1 - B[j]*k2))) # first cue positive, second cue negative
+    L[i,j] = 1 / (1 + exp(-(A[i]*k1 + B[j]*k2))) # both cues positive
+  }
+}
+
+# Change the format of the result matrix for printing
+df <- reshape2::melt(L)
+
+# Print the model result
+figureD = ggplot(df, aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "darkblue", mid = "lightblue", high = "green", midpoint=0.5) +
+  labs(x = "Strength of first positive cue", y = "Strength of second cue", fill="Probability of settlement") +
+  coord_fixed() +
+  geom_contour(aes(z=value), colour = "white") +
+  ggtitle("Two additive positive cues") +
+  theme_minimal()
+
+library(gridExtra)
+pdf("Figure7.pdf", width = 12, height = 8)
+grid.arrange(figureA, figureB, figureC, figureD)
+dev.off()                  
+                    
+getwd()                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+# Old code. Do not run.                    
 
 library(plotly)
 
@@ -51,8 +220,8 @@ plot_ly(df, x = Var2, y = Var1, z = value, type = "surface",
         colors = colorRamp(c("darkblue", "lightblue", "green")), 
         colorbar = list(title = "Probability of settlement"), 
         contours = list(z = list(show = TRUE, usecolormap = TRUE, highlightcolor = "limegreen", project = list(z = TRUE)))) %>%
-  layout(scene = list(xaxis = list(title = "importance of negative cue"), 
-                      yaxis = list(title = "importance of positive cue"), 
+  layout(scene = list(xaxis = list(title = "Strength of negative cue"), 
+                      yaxis = list(title = "Strength of positive cue"), 
                       zaxis = list(title = "Value")), 
          title = "3D Surface Plot with Probability of Settlement")
 
