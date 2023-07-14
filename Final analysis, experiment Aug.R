@@ -1,3 +1,13 @@
+install.packages('lme4')
+install.packages('Matrix')
+install.packages('ggeffects')
+install.packages('DHARMa')
+install.packages("stringr")
+require(lme4)
+require(ggeffects)
+require(DHARMa)
+require(stringr)
+
 #data from august
 data_aug <- read.csv2(file="Cue interactions 08-2022.csv", sep=",")
 colnames(data_aug)[4] <- 'Well_Number'

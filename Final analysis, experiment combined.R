@@ -1,3 +1,14 @@
+install.packages('lme4')
+install.packages('Matrix')
+install.packages('ggeffects')
+install.packages('DHARMa')
+install.packages("stringr")
+require(lme4)
+require(ggeffects)
+require(DHARMa)
+require(stringr)
+
+
 #Combining data from MAY and AUG 
 
 
