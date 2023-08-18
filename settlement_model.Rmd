@@ -1,0 +1,244 @@
+---
+title: "Settlement models"
+author: "Pascal Hablützel"
+date: "2023-08-17"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+#nc # Concentration of negative cue
+#pc # Concentration of positive cue
+
+
+library(ggplot2)
+
+# Figure A: additive model
+
+# Define a vector with all possible values of the positive cue (from 0 to 100)
+pc = seq(from = 0, to = 1, by = 0.01)
+# Define a function (linear, exponential, etc.) for the positive cue
+func1 <- function(x) {
+  x
+}
+pc=sapply(pc, func1)
+pc
+
+# Define a vector with all possible values of the negative cue (from 0 to 100)
+nc = seq(from = 0, to = 1, by = 0.01)
+# Define a function (linear, exponential, etc.) for the positive cue
+func1 <- function(x) {
+  x
+}
+pc=sapply(nc, func1)
+
+# Generate a matrix with all possible combinations of positive and negative cue values
+L = matrix(nrow = length(pc), ncol = length(nc))
+
+p = 1
+n = -1
+
+# Run the model
+for (i in 1:length(pc)) {
+  for (j in 1:length(nc)) {
+    L[i,j] = 1 / (1 + exp(-(log(pc[i])*p + log(nc[j])*n))) + (p+n)/4 # first cue positive, second cue negative
+  }
+}
+
+# Change the format of the result matrix for printing
+df <- reshape2::melt(L)
+
+# Print the model result
+figureA = ggplot(df, aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "darkblue", mid = "lightblue", high = "green", midpoint=0.5) +
+  labs(x = "Amount of negative cue", y = "Amount of positive cue", fill="Probability of settlement") +
+  coord_fixed() +
+  geom_contour(aes(z=value), colour = "white") +
+  ggtitle("Equal ranking: Weighted choice") +
+  theme_minimal()
+
+figureA
+```
+
+```{r}
+#nc # Concentration of negative cue
+#pc # Concentration of positive cue
+
+
+library(ggplot2)
+
+# Figure A: optimistic choice
+
+# Define a vector with all possible values of the positive cue (from 0 to 100)
+pc = seq(from = 0, to = 1, by = 0.01)
+# Define a function (linear, exponential, etc.) for the positive cue
+func1 <- function(x) {
+  x
+}
+pc=sapply(pc, func1)
+pc
+
+# Define a vector with all possible values of the negative cue (from 0 to 100)
+nc = seq(from = 0, to = 1, by = 0.01)
+# Define a function (linear, exponential, etc.) for the positive cue
+func1 <- function(x) {
+  x
+}
+pc=sapply(nc, func1)
+
+# Generate a matrix with all possible combinations of positive and negative cue values
+L = matrix(nrow = length(pc), ncol = length(nc))
+
+p = 1
+n = 0
+
+# Run the model
+for (i in 1:length(pc)) {
+  for (j in 1:length(nc)) {
+    L[i,j] = 1 / (1 + exp(-(log(pc[i])*p + log(nc[j])*n))) + (p+n)/4 # first cue positive, second cue negative
+  }
+}
+
+# Change the format of the result matrix for printing
+df <- reshape2::melt(L)
+
+# Print the model result
+figureB = ggplot(df, aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "darkblue", mid = "lightblue", high = "green", midpoint=0.5) +
+  labs(x = "Amount of negative cue", y = "Amount of positive cue", fill="Probability of settlement") +
+  coord_fixed() +
+  geom_contour(aes(z=value), colour = "white") +
+  ggtitle("Equal ranking: Weighted choice") +
+  theme_minimal()
+
+figureB
+```
+
+```{r}
+#nc # Concentration of negative cue
+#pc # Concentration of positive cue
+
+
+library(ggplot2)
+
+# Figure C: pessimistic model
+
+# Define a vector with all possible values of the positive cue (from 0 to 100)
+pc = seq(from = 0, to = 1, by = 0.01)
+# Define a function (linear, exponential, etc.) for the positive cue
+func1 <- function(x) {
+  x
+}
+pc=sapply(pc, func1)
+pc
+
+# Define a vector with all possible values of the negative cue (from 0 to 100)
+nc = seq(from = 0, to = 1, by = 0.01)
+# Define a function (linear, exponential, etc.) for the positive cue
+func1 <- function(x) {
+  x
+}
+pc=sapply(nc, func1)
+
+# Generate a matrix with all possible combinations of positive and negative cue values
+L = matrix(nrow = length(pc), ncol = length(nc))
+
+p = 0
+n = -1
+
+# Run the model
+for (i in 1:length(pc)) {
+  for (j in 1:length(nc)) {
+    L[i,j] = 1 / (1 + exp(-(log(pc[i])*p + log(nc[j])*n))) + (p-n)/4 # first cue positive, second cue negative
+  }
+}
+
+# Change the format of the result matrix for printing
+df <- reshape2::melt(L)
+
+# Print the model result
+figureC = ggplot(df, aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "darkblue", mid = "lightblue", high = "green", midpoint=0.5) +
+  labs(x = "Amount of negative cue", y = "Amount of positive cue", fill="Probability of settlement") +
+  coord_fixed() +
+  geom_contour(aes(z=value), colour = "white") +
+  ggtitle("Equal ranking: Weighted choice") +
+  theme_minimal()
+
+figureC
+```
+
+```{r}
+#nc # Concentration of negative cue
+#pc # Concentration of positive cue
+
+
+library(ggplot2)
+
+# Figure D: two positive cues
+
+# Define a vector with all possible values of the positive cue (from 0 to 100)
+pc = seq(from = 0, to = 1, by = 0.01)
+# Define a function (linear, exponential, etc.) for the positive cue
+func1 <- function(x) {
+  x
+}
+pc=sapply(pc, func1)
+pc
+
+# Define a vector with all possible values of the negative cue (from 0 to 100)
+nc = seq(from = 0, to = 1, by = 0.01)
+# Define a function (linear, exponential, etc.) for the positive cue
+func1 <- function(x) {
+  x
+}
+pc=sapply(nc, func1)
+
+# Generate a matrix with all possible combinations of positive and negative cue values
+L = matrix(nrow = length(pc), ncol = length(nc))
+
+p = 1
+n = 1
+
+# Run the model
+for (i in 1:length(pc)) {
+  for (j in 1:length(nc)) {
+    L[i,j] = 1 / (1 + exp(-(log(pc[i])*p + log(nc[j])*n))) + (p+n)/4 # first cue positive, second cue negative
+  }
+}
+
+# Change the format of the result matrix for printing
+df <- reshape2::melt(L)
+
+# Print the model result
+figureD = ggplot(df, aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "darkblue", mid = "lightblue", high = "green", midpoint=0.5) +
+  labs(x = "Amount of negative cue", y = "Amount of positive cue", fill="Probability of settlement") +
+  coord_fixed() +
+  geom_contour(aes(z=value), colour = "white") +
+  ggtitle("Equal ranking: Weighted choice") +
+  theme_minimal()
+
+figureD
+```
+
+```{r}
+library(gridExtra)
+pdf("Figure7.pdf", width = 12, height = 8)
+grid.arrange(figureA, figureB, figureC, figureD)
+dev.off()  
+```
+
