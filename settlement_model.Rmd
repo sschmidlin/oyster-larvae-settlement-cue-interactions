@@ -44,13 +44,15 @@ pc=sapply(nc, func1)
 # Generate a matrix with all possible combinations of positive and negative cue values
 L = matrix(nrow = length(pc), ncol = length(nc))
 
-p = 1
-n = -1
+r1 = 0.5
+r2 = 0.5
+t1 = 1
+t2 = -1
 
 # Run the model
 for (i in 1:length(pc)) {
   for (j in 1:length(nc)) {
-    L[i,j] = 1 / (1 + exp(-(log(pc[i])*p + log(nc[j])*n))) + (p+n)/4 # first cue positive, second cue negative
+        L[i,j] = (1+pc[i]*r1*t1+nc[j]*r2*t2)/2
   }
 }
 
@@ -61,13 +63,28 @@ df <- reshape2::melt(L)
 figureA = ggplot(df, aes(x = Var2, y = Var1, fill = value)) +
   geom_tile() +
   scale_fill_gradient2(low = "darkblue", mid = "lightblue", high = "green", midpoint=0.5) +
-  labs(x = "Amount of negative cue", y = "Amount of positive cue", fill="Probability of settlement") +
+  labs(x = "Strength of negative cue", y = "Strength of positive cue", fill="Probability of settlement") +
+  scale_x_continuous(labels = function(x) x / 100) +
+  scale_y_continuous(labels = function(y) y / 100) +
   coord_fixed() +
   geom_contour(aes(z=value), colour = "white") +
   ggtitle("Equal ranking: Weighted choice") +
-  theme_minimal()
+  theme_minimal() +
+  theme(legend.position="none")
 
 figureA
+
+figure1 = ggplot(df, aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "darkblue", mid = "lightblue", high = "green", midpoint=0.5) +
+  labs(x = "Strength of negative cue", y = "Strength of positive cue", fill="Probability of settlement") +
+  scale_x_continuous(labels = function(x) x / 100) +
+  scale_y_continuous(labels = function(y) y / 100) +
+  coord_fixed() +
+  geom_contour(aes(z=value), colour = "white") +
+  ggtitle("Equal ranking: Weighted choice") +
+  theme_minimal() +
+  theme(legend.position="top")
 ```
 
 ```{r}
@@ -99,13 +116,15 @@ pc=sapply(nc, func1)
 # Generate a matrix with all possible combinations of positive and negative cue values
 L = matrix(nrow = length(pc), ncol = length(nc))
 
-p = 1
-n = 0
+r1 = 1
+r2 = 0
+t1 = 1
+t2 = -1
 
 # Run the model
 for (i in 1:length(pc)) {
   for (j in 1:length(nc)) {
-    L[i,j] = 1 / (1 + exp(-(log(pc[i])*p + log(nc[j])*n))) + (p+n)/4 # first cue positive, second cue negative
+        L[i,j] = (1+pc[i]*r1*t1+nc[j]*r2*t2)/2
   }
 }
 
@@ -116,11 +135,14 @@ df <- reshape2::melt(L)
 figureB = ggplot(df, aes(x = Var2, y = Var1, fill = value)) +
   geom_tile() +
   scale_fill_gradient2(low = "darkblue", mid = "lightblue", high = "green", midpoint=0.5) +
-  labs(x = "Amount of negative cue", y = "Amount of positive cue", fill="Probability of settlement") +
+  labs(x = "Strength of negative cue", y = "Strength of positive cue", fill="Probability of settlement") +
+  scale_x_continuous(labels = function(x) x / 100) +
+  scale_y_continuous(labels = function(y) y / 100) +
   coord_fixed() +
   geom_contour(aes(z=value), colour = "white") +
-  ggtitle("Equal ranking: Weighted choice") +
-  theme_minimal()
+  ggtitle("Pos. cue more highly ranked: Optimistic choice") +
+  theme_minimal() +
+  theme(legend.position="none")
 
 figureB
 ```
@@ -154,13 +176,15 @@ pc=sapply(nc, func1)
 # Generate a matrix with all possible combinations of positive and negative cue values
 L = matrix(nrow = length(pc), ncol = length(nc))
 
-p = 0
-n = -1
+r1 = 0
+r2 = 1
+t1 = 1
+t2 = -1
 
 # Run the model
 for (i in 1:length(pc)) {
   for (j in 1:length(nc)) {
-    L[i,j] = 1 / (1 + exp(-(log(pc[i])*p + log(nc[j])*n))) + (p-n)/4 # first cue positive, second cue negative
+        L[i,j] = (1+pc[i]*r1*t1+nc[j]*r2*t2)/2
   }
 }
 
@@ -171,11 +195,14 @@ df <- reshape2::melt(L)
 figureC = ggplot(df, aes(x = Var2, y = Var1, fill = value)) +
   geom_tile() +
   scale_fill_gradient2(low = "darkblue", mid = "lightblue", high = "green", midpoint=0.5) +
-  labs(x = "Amount of negative cue", y = "Amount of positive cue", fill="Probability of settlement") +
+  labs(x = "Strength of negative cue", y = "Strength of positive cue", fill="Probability of settlement") +
+  scale_x_continuous(labels = function(x) x / 100) +
+  scale_y_continuous(labels = function(y) y / 100) +
   coord_fixed() +
   geom_contour(aes(z=value), colour = "white") +
-  ggtitle("Equal ranking: Weighted choice") +
-  theme_minimal()
+  ggtitle("Neg. cue more highly ranked: Pessimistic choice") +
+  theme_minimal() +
+  theme(legend.position="none")
 
 figureC
 ```
@@ -187,7 +214,7 @@ figureC
 
 library(ggplot2)
 
-# Figure D: two positive cues
+# Figure D: positive and negative cues
 
 # Define a vector with all possible values of the positive cue (from 0 to 100)
 pc = seq(from = 0, to = 1, by = 0.01)
@@ -209,13 +236,15 @@ pc=sapply(nc, func1)
 # Generate a matrix with all possible combinations of positive and negative cue values
 L = matrix(nrow = length(pc), ncol = length(nc))
 
-p = 1
-n = 1
+r1 = 0.65
+r2 = 0.35
+t1 = 1
+t2 = -1
 
 # Run the model
 for (i in 1:length(pc)) {
   for (j in 1:length(nc)) {
-    L[i,j] = 1 / (1 + exp(-(log(pc[i])*p + log(nc[j])*n))) + (p+n)/4 # first cue positive, second cue negative
+        L[i,j] = (1+pc[i]*r1*t1+nc[j]*r2*t2)/2
   }
 }
 
@@ -226,19 +255,253 @@ df <- reshape2::melt(L)
 figureD = ggplot(df, aes(x = Var2, y = Var1, fill = value)) +
   geom_tile() +
   scale_fill_gradient2(low = "darkblue", mid = "lightblue", high = "green", midpoint=0.5) +
-  labs(x = "Amount of negative cue", y = "Amount of positive cue", fill="Probability of settlement") +
+  labs(x = "Strength of negative cue", y = "Strength of positive cue", fill="Probability of settlement") +
+  scale_x_continuous(labels = function(x) x / 100) +
+  scale_y_continuous(labels = function(y) y / 100) +
   coord_fixed() +
   geom_contour(aes(z=value), colour = "white") +
-  ggtitle("Equal ranking: Weighted choice") +
-  theme_minimal()
+  ggtitle("Pos. cue ambiguously higher ranked: Weighted choice") +
+  theme_minimal() +
+  theme(legend.position="none")
 
 figureD
 ```
 
 ```{r}
+#nc # Concentration of negative cue
+#pc # Concentration of positive cue
+
+
+library(ggplot2)
+
+# Figure E: two positive cues
+
+# Define a vector with all possible values of the positive cue (from 0 to 100)
+pc = seq(from = 0, to = 1, by = 0.01)
+# Define a function (linear, exponential, etc.) for the positive cue
+func1 <- function(x) {
+  x
+}
+pc=sapply(pc, func1)
+pc
+
+# Define a vector with all possible values of the negative cue (from 0 to 100)
+nc = seq(from = 0, to = 1, by = 0.01)
+# Define a function (linear, exponential, etc.) for the positive cue
+func1 <- function(x) {
+  x
+}
+pc=sapply(nc, func1)
+
+# Generate a matrix with all possible combinations of positive and negative cue values
+L = matrix(nrow = length(pc), ncol = length(nc))
+
+r1 = 0.5
+r2 = 0.5
+t1 = 1
+t2 = 1
+
+# Run the model
+for (i in 1:length(pc)) {
+  for (j in 1:length(nc)) {
+        L[i,j] = (1+pc[i]*r1*t1+nc[j]*r2*t2)/2
+  }
+}
+
+# Change the format of the result matrix for printing
+df <- reshape2::melt(L)
+
+# Print the model result
+figureE = ggplot(df, aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "darkblue", mid = "lightblue", high = "green", midpoint=0.5) +
+  labs(x = "Strength of second pos. cue", y = "Strength of first pos. cue", fill="Probability of settlement") +
+  scale_x_continuous(labels = function(x) x / 100) +
+  scale_y_continuous(labels = function(y) y / 100) +
+  coord_fixed() +
+  geom_contour(aes(z=value), colour = "white") +
+  ggtitle("Two additive positive cues: Weighted choice") +
+  theme_minimal() +
+  theme(legend.position="none")
+
+figureE
+```
+
+
+```{r}
+matrix_size <- 101
+data_matrix <- matrix(0, nrow = matrix_size, ncol = matrix_size)
+
+gaussian_peak <- function(x, y, x_peak, y_peak, amplitude, std_dev) {
+  exp_val <- -((x - x_peak)^2 + (y - y_peak)^2) / (2 * std_dev^2)
+  amplitude * exp(exp_val)
+}
+
+peak_params <- data.frame(
+  x_peak = c(10, 55, 70, 75, 30),
+  y_peak = c(5, 65, 20, 35, 60),
+  amplitude = c(0.8, 0.6, 0.7, 0.5, 0.9),
+  std_dev = c(10, 8, 12, 15, 10)
+)
+
+for (x in 1:matrix_size) {
+  for (y in 1:matrix_size) {
+    for (i in 1:nrow(peak_params)) {
+      data_matrix[x, y] <- data_matrix[x, y] + gaussian_peak(x, y,
+                                                             peak_params$x_peak[i],
+                                                             peak_params$y_peak[i],
+                                                             peak_params$amplitude[i],
+                                                             peak_params$std_dev[i])
+    }
+  }
+}
+
+c1 <- (data_matrix - min(data_matrix)) / (max(data_matrix) - min(data_matrix))
+
+
+matrix_size <- 101
+data_matrix <- matrix(0, nrow = matrix_size, ncol = matrix_size)
+
+gaussian_peak <- function(x, y, x_peak, y_peak, amplitude, std_dev) {
+  exp_val <- -((x - x_peak)^2 + (y - y_peak)^2) / (2 * std_dev^2)
+  amplitude * exp(exp_val)
+}
+
+peak_params <- data.frame(
+  x_peak = c(0, 25, 80, 60, 60),
+  y_peak = c(5, 15, 20, 95, 90),
+  amplitude = c(0.8, 0.6, 0.7, 0.5, 0.9),
+  std_dev = c(10, 8, 12, 15, 10)
+)
+
+for (x in 1:matrix_size) {
+  for (y in 1:matrix_size) {
+    for (i in 1:nrow(peak_params)) {
+      data_matrix[x, y] <- data_matrix[x, y] + gaussian_peak(x, y,
+                                                             peak_params$x_peak[i],
+                                                             peak_params$y_peak[i],
+                                                             peak_params$amplitude[i],
+                                                             peak_params$std_dev[i])
+    }
+  }
+}
+
+c2 <- (data_matrix - min(data_matrix)) / (max(data_matrix) - min(data_matrix))
+
+
+matrix_size <- 101
+data_matrix <- matrix(0, nrow = matrix_size, ncol = matrix_size)
+
+gaussian_peak <- function(x, y, x_peak, y_peak, amplitude, std_dev) {
+  exp_val <- -((x - x_peak)^2 + (y - y_peak)^2) / (2 * std_dev^2)
+  amplitude * exp(exp_val)
+}
+
+peak_params <- data.frame(
+  x_peak = c(25, 45, 60, 80, 50),
+  y_peak = c(25, 75, 50, 40, 70),
+  amplitude = c(0.8, 0.6, 0.7, 0.5, 0.9),
+  std_dev = c(10, 8, 12, 15, 10)
+)
+
+for (x in 1:matrix_size) {
+  for (y in 1:matrix_size) {
+    for (i in 1:nrow(peak_params)) {
+      data_matrix[x, y] <- data_matrix[x, y] + gaussian_peak(x, y,
+                                                             peak_params$x_peak[i],
+                                                             peak_params$y_peak[i],
+                                                             peak_params$amplitude[i],
+                                                             peak_params$std_dev[i])
+    }
+  }
+}
+
+c3 <- (data_matrix - min(data_matrix)) / (max(data_matrix) - min(data_matrix))
+
+
+
+
+
+
+
+
+#nc # Concentration of negative cue
+#pc # Concentration of positive cue
+
+
+library(ggplot2)
+
+# Figure F: complex landscape
+
+# Define a vector with all possible values of the positive cue (from 0 to 100)
+pc = seq(from = 0, to = 1, by = 0.01)
+# Define a function (linear, exponential, etc.) for the positive cue
+func1 <- function(x) {
+  x
+}
+pc=sapply(pc, func1)
+pc
+
+# Define a vector with all possible values of the negative cue (from 0 to 100)
+nc = seq(from = 0, to = 1, by = 0.01)
+# Define a function (linear, exponential, etc.) for the positive cue
+func1 <- function(x) {
+  x
+}
+pc=sapply(nc, func1)
+
+# Generate a matrix with all possible combinations of positive and negative cue values
+L = matrix(nrow = length(pc), ncol = length(nc))
+
+c1 = 1-c1
+c2 = 1-c2
+
+r1 = 0.15
+r2 = 0.35
+r3 = 0.5
+t1 = 1
+t2 = -1
+t3 = 1
+
+# Run the model
+for (i in 1:length(pc)) {
+  for (j in 1:length(nc)) {
+        L[i,j] = 1/2+(c1[i,j]*r1*t1+c2[i,j]*r2*t2+c3[i,j]*r3*t3)/3
+  }
+}
+
+# Change the format of the result matrix for printing
+df <- reshape2::melt(L)
+
+# Print the model result
+figureF = ggplot(df, aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "darkblue", mid = "lightblue", high = "green", midpoint=0.5) +
+  labs(x = "Spatial axis 1", y = "Spatial axis 2", fill="Probability of settlement") +
+  coord_fixed() +
+  geom_contour(aes(z=value), colour = "white") +
+  ggtitle("Landscape with pos. and neg. cues") +
+  theme_minimal() +
+  theme(legend.position="none")
+
+figureF
+```
+
+```{r}
 library(gridExtra)
-pdf("Figure7.pdf", width = 12, height = 8)
-grid.arrange(figureA, figureB, figureC, figureD)
+
+get_legend<-function(myggplot){
+  tmp <- ggplot_gtable(ggplot_build(myggplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  return(legend)
+}
+legend <- get_legend(figure1)
+
+pdf("Figure7.pdf", width = 16, height = 13)
+grid.arrange(figureA, figureB, figureC, figureD, figureE, figureF, legend, ncol=3, nrow=3,
+             layout_matrix = rbind(c(1,2,3), c(4,5,6), c(7,7,7)),
+             widths = c(4, 4, 4), heights = c(6, 6, 1))
 dev.off()  
 ```
 
