@@ -7,6 +7,9 @@ require(lme4)
 require(ggeffects)
 require(DHARMa)
 require(stringr)
+require(ggeffects)
+require(ggplot2)
+require(emmeans)
 
 #data from august
 data_aug <- read.csv2(file="Cue interactions 08-2022.csv", sep=",")
@@ -47,6 +50,39 @@ data_aug$predator_cue <-sub("FALSE", "Absent", data_aug$predator_cue)
 data_aug$conspecific_cue <-sub("TRUE", "Present", data_aug$conspecific_cue)
 data_aug$conspecific_cue <-sub("FALSE", "Absent", data_aug$conspecific_cue)
 
+####MODEL
+model <- glmer(Settled ~ conspecific_cue +  Shell + biofilm + conspecific_cue:predator_cue + conspecific_cue:biofilm + Shell:biofilm + Age + (1|Batch), data=data_aug, family=binomial)
+
+#Post Hoc
+emm_interaction <- emmeans(model, ~ conspecific_cue + predator_cue + biofilm, adjust = "tukey", type = "response")
+
+# Perform pairwise comparisons between the levels of the interaction
+pairwise_emm <-pairs(emm_interaction)
+
+emm <- emmeans(model, ~ conspecific_cue * predator_cue * biofilm, type = "response")
+
+# Get a tidy data frame with confidence limits
+emm_df <- as.data.frame(confint(emm))   # columns: prob, SE, lower.CL, upper.CL
+
+# Plot
+ggplot(emm_df,
+       aes(x = conspecific_cue, y = prob, color = predator_cue, group = predator_cue)) +
+  geom_point(position = position_dodge(width = 0.2), size = 3) +
+  geom_line(position = position_dodge(width = 0.2)) +
+  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL),
+                width = 0.2, position = position_dodge(width = 0.2)) +
+  facet_wrap(~ biofilm) +
+  labs(x = "Conspecific cue (waterborne)",
+       y = "Larvae Settled (%)",
+       color = "Predator Cue") +
+  scale_y_continuous(limits = c(0, 1),
+                     labels = function(x) paste0(x * 100)) +
+  scale_color_manual(values = c("dodgerblue3", "orangered4")) +
+  theme_classic(base_size = 12)
+
+
+
+#################################old code###############################################
 
 #model with con and predator cue interaction 
 model <-glmer(Settled ~ conspecific_cue + predator_cue + conspecific_cue:predator_cue + (1|biofilm) + (1|Shell) + (1|Batch), data=data_aug, family=binomial)
