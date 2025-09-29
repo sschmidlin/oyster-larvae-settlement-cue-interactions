@@ -331,133 +331,223 @@ ggplot(data_raw, aes(x = conspecific_cue, y = pro_settled, color = predator_cue)
   scale_color_manual(values = c("dodgerblue3", "orangered4"))
 
 
-#figure for paper################################3
+#figures for paper################################3
 ###############################################################
 #####model predicted data with raw data in violin plots
 ##############################################################
-# predictions
 
-m <- ggpredict(model1, terms = c("conspecific_cue", "predator_cue"))
 
-# raw data: numeric x and factors
-raw_points <- data_raw %>%
-  filter(!is.na(conspecific_cue), !is.na(predator_cue), !is.na(pro_settled)) %>%
-  mutate(
-    x_num = as.numeric(factor(conspecific_cue, levels = c("Absent","Present"))),
-    predator_cue = factor(predator_cue)
+# predictions 
+m1 <- ggpredict(model1, terms = c("conspecific_cue","predator_cue"))
+pred <- as.data.frame(m1) |>
+  dplyr::mutate(
+    x_num = as.integer(factor(as.character(x), levels = c("Absent","Present"))),
+    group = factor(as.character(group), levels = c("Absent","Present")),
+    # small left/right offset for the two groups
+    x_off = x_num + ifelse(group == "Absent", -0.12, 0.12)
+  )
+
+# raw data (violins stay dodged)
+raw_points <- data_raw |>
+  dplyr::mutate(
+    x_num        = as.integer(factor(as.character(conspecific_cue), levels = c("Absent","Present"))),
+    predator_cue = factor(as.character(predator_cue), levels = c("Absent","Present"))
   )
 
 pd <- position_dodge(width = 0.6)
 
-plot(m) +
-  labs(
-    x = "Conspecific Cue (waterborne)",
-    y = "Larvae Settled (%)",
-    title = " "
-  ) +
-  scale_x_continuous(breaks = c(1, 2), labels = c("Absent", "Present")) +
-  scale_y_continuous(labels = function(x) paste0(x*100), limits = c(0,1)) +
-  guides(color = guide_legend(title = "Predator Cue")) +
-  scale_color_manual(values = c("yellow3", "orangered4")) +
-  theme(axis.text = element_text(size = 12), axis.title = element_text(size = 12)) +
+p1 <- ggplot() +
+  # RAW VIOLINS (dodged so they sit side-by-side)
   geom_violin(
     data = raw_points,
-    aes(x = x_num, y = pro_settled, fill = predator_cue, group = interaction(x_num, predator_cue)),
-    position = pd,
-    alpha = 0.3,
-    color = NA,
-    inherit.aes = FALSE
+    aes(x = x_num, y = pro_settled, fill = predator_cue,
+        group = interaction(x_num, predator_cue)),
+    position = pd, alpha = 0.3, color = NA
   ) +
-  scale_fill_manual(values = c("yellow3", "orangered4")) +
-  annotate("text", x = 0.94, y = 0.25, label = "A", size = 5) +
-  annotate("text", x = 1.06, y = 0.175, label = "A", size = 5) +
-  annotate("text", x = 1.94, y = 0.5, label = "B", size = 5) +
-  annotate("text", x = 2.06, y = 0.35, label = "AB", size = 5)
+  scale_fill_manual(values = c(Absent = "yellow3", Present = "orangered4")) +
+  
+  # MODEL CIs + LINES + POINTS (use the offset; NO dodge)
+  geom_errorbar(
+    data = pred,
+    aes(x = x_off, ymin = conf.low, ymax = conf.high, color = group),
+    width = 0.06, linewidth = 0.8
+  ) +
+  geom_line(
+    data = pred,
+    aes(x = x_off, y = predicted, color = group, group = group),
+    linewidth = 1
+  ) +
+  geom_point(
+    data = pred,
+    aes(x = x_off, y = predicted, color = group),
+    size = 2
+  ) +
+  scale_color_manual(values = c(Absent = "yellow3", Present = "orangered4")) +
+  
+  scale_x_continuous(breaks = c(1, 2), labels = c("Absent","Present")) +
+  scale_y_continuous(labels = function(y) paste0(y*100), limits = c(0,1)) +
+  guides(color = guide_legend(title = "Predator Cue"),
+         fill  = guide_legend(title = "Predator Cue")) +
+  labs(x = "Conspecific Cue (waterborne)", y = "Larvae Settled (%)", title = " ") +
+  theme(legend.position = "none", axis.text = element_text(size = 12), axis.title = element_text(size = 12))+
+  # Absent letters near x=1 and x=2 (shifted left)
+  annotate("text", x = 1 - 0.12, y = 0.25, label = "A", size = 5) +
+  annotate("text", x = 2 - 0.12, y = 0.50, label = "B", size = 5) +
+  # Present letters (shifted right)
+  annotate("text", x = 1 + 0.12, y = 0.20, label = "A", size = 5) +
+  annotate("text", x = 2 + 0.12, y = 0.35, label = "AB", size = 5)
+
 
 
 ##############################################
 #Same plots for the other cue interactions
 ##predator X Shell
 
-m <- ggpredict(model1, terms = c("Shell", "predator_cue"))
-# raw data: numeric x and factors
-raw_points <- data_raw %>%
-  filter(!is.na(Shell), !is.na(predator_cue), !is.na(pro_settled)) %>%
+
+# --- predictions ---
+m2 <- ggpredict(model1, terms = c("Shell","predator_cue"))
+pred2 <- as.data.frame(m2) |>
   mutate(
-    x_num = as.numeric(factor(Shell, levels = c("Sterilized","Untreated"))),
-    predator_cue = factor(predator_cue)
+    # Shell on x: Sterilized = 1, Untreated = 2
+    x_num = as.integer(factor(as.character(x), levels = c("Sterilized","Untreated"))),
+    group = factor(as.character(group), levels = c("Absent","Present")),  # predator cue groups
+    # small left/right offset so groups don't overlap at each x
+    x_off = x_num + ifelse(group == "Absent", -0.12, 0.12)
+  )
+
+# --- raw data for violins (dodged) ---
+raw_points2 <- data_raw |>
+  mutate(
+    x_num        = as.integer(factor(as.character(Shell), levels = c("Sterilized","Untreated"))),
+    predator_cue = factor(as.character(predator_cue), levels = c("Absent","Present"))
   )
 
 pd <- position_dodge(width = 0.6)
 
-plot(m) +
-  labs(
-    x = "Conspecific Shell",
-    y = "Larvae Settled (%)",
-    title = " "
-  ) +
-  scale_x_continuous(breaks = c(1, 2), labels = c("Sterilized", "Untreated")) +
-  scale_y_continuous(labels = function(x) paste0(x*100), limits = c(0,1)) +
-  guides(color = guide_legend(title = "Predator Cue")) +
-  scale_color_manual(values = c("yellow3", "orangered4")) +
-  theme(axis.text = element_text(size = 12), axis.title = element_text(size = 12)) +
+p2 <- ggplot() +
+  # RAW VIOLINS (dodged)
   geom_violin(
-    data = raw_points,
-    aes(x = x_num, y = pro_settled, fill = predator_cue, group = interaction(x_num, predator_cue)),
-    position = pd,
-    alpha = 0.3,
-    color = NA,
-    inherit.aes = FALSE
+    data = raw_points2,
+    aes(x = x_num, y = pro_settled, fill = predator_cue,
+        group = interaction(x_num, predator_cue)),
+    position = pd, alpha = 0.3, color = NA
   ) +
-  scale_fill_manual(values = c("yellow3", "orangered4")) +
-  annotate("text", x = 0.94, y = 0.25, label = "A", size = 5) +
-  annotate("text", x = 1.06, y = 0.175, label = "B", size = 5) +
-  annotate("text", x = 1.94, y = 0.85, label = "C", size = 5) +
-  annotate("text", x = 2.06, y = 0.91, label = "C", size = 5)
+  scale_fill_manual(values = c(Absent = "yellow3", Present = "orangered4")) +
+  
+  # MODEL CI BARS + LINES + POINTS (offset; NO dodge)
+  geom_errorbar(
+    data = pred2,
+    aes(x = x_off, ymin = conf.low, ymax = conf.high, color = group),
+    width = 0.06, linewidth = 0.8
+  ) +
+  geom_line(
+    data = pred2,
+    aes(x = x_off, y = predicted, color = group, group = group),
+    linewidth = 1
+  ) +
+  geom_point(
+    data = pred2,
+    aes(x = x_off, y = predicted, color = group),
+    size = 2
+  ) +
+  scale_color_manual(values = c(Absent = "yellow3", Present = "orangered4")) +
+  
+  # axes / labels / theme
+  scale_x_continuous(breaks = c(1, 2), labels = c("Sterilized","Untreated")) +
+  scale_y_continuous(labels = function(y) paste0(y * 100), limits = c(0, 1)) +
+  guides(color = guide_legend(title = "Predator Cue"),
+         fill  = guide_legend(title = "Predator Cue")) +
+  labs(x = "Conspecific Shell", y = "Larvae Settled (%)", title = " ") +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 12)) +
+  
+  # (optional) significance letters — use same offsets
+  annotate("text", x = 1 - 0.12, y = 0.25, label = "A", size = 5) +
+  annotate("text", x = 1 + 0.12, y = 0.175, label = "B", size = 5) +
+  annotate("text", x = 2 - 0.12, y = 0.85, label = "C", size = 5) +
+  annotate("text", x = 2 + 0.12, y = 0.91,  label = "C", size = 5)
+
 
 ##############################################
 #Same plots for the other cue interactions
 ##Conspecific X Shell
 
-m <- ggpredict(model1, terms = c("Shell", "conspecific_cue"))
 
-# Raw data: numeric x for Shell and tidy factors
-raw_points <- data_raw %>%
-  filter(!is.na(Shell), !is.na(conspecific_cue), !is.na(pro_settled)) %>%
+# --- predictions ---
+m3  <- ggpredict(model1, terms = c("Shell","conspecific_cue"))
+pred3 <- as.data.frame(m3) |>
   mutate(
-    x_num = as.numeric(factor(Shell, levels = c("Sterilized","Untreated"))),
-    conspecific_cue = factor(conspecific_cue, levels = c("Absent","Present"))
+    # Shell on x: Sterilized = 1, Untreated = 2
+    x_num = as.integer(factor(as.character(x), levels = c("Sterilized","Untreated"))),
+    group = factor(as.character(group), levels = c("Absent","Present")),  # conspecific cue groups
+    # small left/right offset so groups don't overlap at each x
+    x_off = x_num + ifelse(group == "Absent", -0.12, 0.12)
+  )
+
+# --- raw data for violins (dodged) ---
+raw_points3 <- data_raw |>
+  filter(!is.na(Shell), !is.na(conspecific_cue), !is.na(pro_settled)) |>
+  mutate(
+    x_num           = as.integer(factor(as.character(Shell), levels = c("Sterilized","Untreated"))),
+    conspecific_cue = factor(as.character(conspecific_cue), levels = c("Absent","Present"))
   )
 
 pd <- position_dodge(width = 0.6)
 
-plot(m) +
-  labs(
-    x = "Conspecific Shell",
-    y = "Larvae Settled (%)",
-    title = " "
-  ) +
-  scale_x_continuous(breaks = c(1, 2), labels = c("Sterilized", "Untreated")) +
-  scale_y_continuous(labels = function(x) paste0(x*100), limits = c(0,1)) +
-  guides(color = guide_legend(title = "Conspecific Cue")) +
-  scale_color_manual(values = c("darkorange2", "dodgerblue3")) +
-  theme(axis.text = element_text(size = 12), axis.title = element_text(size = 12)) +
-  
-  # violins of raw data
+p3 <- ggplot() +
+  # RAW VIOLINS (dodged)
   geom_violin(
-    data = raw_points,
+    data = raw_points3,
     aes(x = x_num, y = pro_settled, fill = conspecific_cue,
         group = interaction(x_num, conspecific_cue)),
-    position = pd, alpha = 0.3, color = NA, inherit.aes = FALSE
+    position = pd, alpha = 0.3, color = NA
   ) +
-  scale_fill_manual(values = c("darkorange2", "dodgerblue3")) +
+  scale_fill_manual(values = c(Absent = "darkorange2", Present = "dodgerblue3")) +
   
-  # letters
-  annotate("text", x = 0.94, y = 0.25, label = "A", size = 5) +
-  annotate("text", x = 1.06, y = 0.48, label = "B", size = 5) +
-  annotate("text", x = 1.94, y = 0.86,  label = "C", size = 5) +
-  annotate("text", x = 2.06, y = 0.99,  label = "D", size = 5)
+  # MODEL CI BARS + LINES + POINTS (offset; NO dodge)
+  geom_errorbar(
+    data = pred3,
+    aes(x = x_off, ymin = conf.low, ymax = conf.high, color = group),
+    width = 0.06, linewidth = 0.8
+  ) +
+  geom_line(
+    data = pred3,
+    aes(x = x_off, y = predicted, color = group, group = group),
+    linewidth = 1
+  ) +
+  geom_point(
+    data = pred3,
+    aes(x = x_off, y = predicted, color = group),
+    size = 2
+  ) +
+  scale_color_manual(values = c(Absent = "darkorange2", Present = "dodgerblue3")) +
+  
+  # axes / labels / theme
+  scale_x_continuous(breaks = c(1, 2), labels = c("Sterilized","Untreated")) +
+  scale_y_continuous(labels = function(y) paste0(y * 100), limits = c(0, 1)) +
+  guides(color = guide_legend(title = "Conspecific Cue"),
+         fill  = guide_legend(title = "Conspecific Cue")) +
+  labs(x = "Conspecific Shell", y = "Larvae Settled (%)", title = " ") +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 12)) +
+  
+  # (optional) significance letters — use the same offsets if you want per-group labels
+  annotate("text", x = 1 - 0.12, y = 0.25, label = "A", size = 5) +
+  annotate("text", x = 1 + 0.12, y = 0.48, label = "B", size = 5) +
+  annotate("text", x = 2 - 0.12, y = 0.86, label = "C", size = 5) +
+  annotate("text", x = 2 + 0.12, y = 0.99, label = "D", size = 5)
 
+ 
+
+library(patchwork)
+
+combined <- (p1 | p2)
+combined
+
+p3
+
+combined <- (p4 | p5 | p6) /
+  (p7 | p8 | p9)
 
 #############################
 ##model august ##################
@@ -496,171 +586,304 @@ data_raw2$biofilm <-sub("FALSE", "Absent", data_raw2$biofilm)
 
 #######Making figures######
 #######
-
-m <- ggpredict(model2, terms = c("conspecific_cue", "predator_cue"))
-
-# raw data: numeric x and factors
-raw_points <- data_raw2 %>%
-  filter(!is.na(conspecific_cue), !is.na(predator_cue), !is.na(pro_settled)) %>%
+# --- predictions ---
+m4 <- ggpredict(model2, terms = c("conspecific_cue","predator_cue"))
+pred4 <- as.data.frame(m4) |>
   mutate(
-    x_num = as.numeric(factor(conspecific_cue, levels = c("Absent","Present"))),
-    predator_cue = factor(predator_cue)
+    # Conspecific cue on x: Absent = 1, Present = 2
+    x_num = as.integer(factor(as.character(x), levels = c("Absent","Present"))),
+    group = factor(as.character(group), levels = c("Absent","Present")),  # predator cue groups
+    # small left/right offset so groups don't overlap at each x
+    x_off = x_num + ifelse(group == "Absent", -0.12, 0.12)
   )
 
+# --- raw data for violins (dodged) ---
+raw_points4 <- data_raw2 |>
+  filter(!is.na(conspecific_cue), !is.na(predator_cue), !is.na(pro_settled)) |>
+  mutate(
+    x_num        = as.integer(factor(as.character(conspecific_cue), levels = c("Absent","Present"))),
+    predator_cue = factor(as.character(predator_cue), levels = c("Absent","Present"))
+  )
+
+# Dodge ONLY for violins
 pd <- position_dodge(width = 0.6)
 
-plot(m) +
-  labs(
-    x = "Conspecific Cue (waterborne)",
-    y = "Larvae Settled (%)",
-    title = " "
-  ) +
-  scale_x_continuous(breaks = c(1, 2), labels = c("Absent", "Present")) +
-  scale_y_continuous(labels = function(x) paste0(x*100), limits = c(0,1)) +
-  guides(color = guide_legend(title = "Predator Cue")) +
-  scale_color_manual(values = c("yellow3", "orangered4")) +
-  theme(axis.text = element_text(size = 12), axis.title = element_text(size = 12)) +
+# --- build plot (save as a ggplot object, e.g., p4) ---
+p4 <- ggplot() +
+  # RAW VIOLINS (dodged by predator cue)
   geom_violin(
-    data = raw_points,
-    aes(x = x_num, y = pro_settled, fill = predator_cue, group = interaction(x_num, predator_cue)),
-    position = pd,
-    alpha = 0.3,
-    color = NA,
-    inherit.aes = FALSE
+    data = raw_points4,
+    aes(x = x_num, y = pro_settled, fill = predator_cue,
+        group = interaction(x_num, predator_cue)),
+    position = pd, alpha = 0.3, color = NA
   ) +
-  scale_fill_manual(values = c("yellow3", "orangered4")) +
-  annotate("text", x = 0.94, y = 0.180, label = "A", size = 5) +
-  annotate("text", x = 1.06, y = 0.175, label = "A", size = 5) +
-  annotate("text", x = 1.94, y = 0.45, label = "B", size = 5) +
-  annotate("text", x = 2.06, y = 0.38, label = "B", size = 5)
+  scale_fill_manual(values = c(Absent = "yellow3", Present = "orangered4")) +
+  
+  # MODEL CI BARS + LINES + POINTS (offset; NO dodge)
+  geom_errorbar(
+    data = pred4,
+    aes(x = x_off, ymin = conf.low, ymax = conf.high, color = group),
+    width = 0.06, linewidth = 0.8
+  ) +
+  geom_line(
+    data = pred4,
+    aes(x = x_off, y = predicted, color = group, group = group),
+    linewidth = 1
+  ) +
+  geom_point(
+    data = pred4,
+    aes(x = x_off, y = predicted, color = group),
+    size = 2
+  ) +
+  scale_color_manual(values = c(Absent = "yellow3", Present = "orangered4")) +
+  
+  # axes / labels / theme
+  scale_x_continuous(breaks = c(1, 2), labels = c("Absent","Present")) +
+  scale_y_continuous(labels = function(y) paste0(y * 100), limits = c(0, 1)) +
+  guides(color = guide_legend(title = "Predator Cue"),
+         fill  = guide_legend(title = "Predator Cue")) +
+  labs(x = "Conspecific Cue (waterborne)", y = "Larvae Settled (%)", title = " ") +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 12))
+
+# (optional) significance letters using the same ±0.12 offset
+p4 <- p4 +
+  annotate("text", x = 1 - 0.12, y = 0.180, label = "A", size = 5) +
+  annotate("text", x = 1 + 0.12, y = 0.175, label = "A", size = 5) +
+  annotate("text", x = 2 - 0.12, y = 0.45,  label = "B", size = 5) +
+  annotate("text", x = 2 + 0.12, y = 0.38,  label = "B", size = 5)
+
+# print
+p4
+
+
 
 
 ##############################################
 #Same plots for the other cue interactions
 ##predator X Shell
 
-m <- ggpredict(model2, terms = c("Shell", "predator_cue"))
-# raw data: numeric x and factors
-raw_points <- data_raw2 %>%
-  filter(!is.na(Shell), !is.na(predator_cue), !is.na(pro_settled)) %>%
+# --- predictions ---
+
+m5 <- ggpredict(model2, terms = c("Shell","predator_cue"))
+pred5 <- as.data.frame(m5) |>
   mutate(
-    x_num = as.numeric(factor(Shell, levels = c("Sterilized","Untreated"))),
-    predator_cue = factor(predator_cue)
+    # Shell on x: Sterilized = 1, Untreated = 2
+    x_num = as.integer(factor(as.character(x), levels = c("Sterilized","Untreated"))),
+    group = factor(as.character(group), levels = c("Absent","Present")),  # predator cue groups
+    # small left/right offset so groups don't overlap at each x
+    x_off = x_num + ifelse(group == "Absent", -0.12, 0.12)
   )
 
+# --- raw data for violins (dodged) ---
+raw_points5 <- data_raw2 |>
+  filter(!is.na(Shell), !is.na(predator_cue), !is.na(pro_settled)) |>
+  mutate(
+    x_num        = as.integer(factor(as.character(Shell), levels = c("Sterilized","Untreated"))),
+    predator_cue = factor(as.character(predator_cue), levels = c("Absent","Present"))
+  )
+
+# Dodge ONLY for violins
 pd <- position_dodge(width = 0.6)
 
-plot(m) +
-  labs(
-    x = "Conspecific Shell",
-    y = "Larvae Settled (%)",
-    title = " "
-  ) +
-  scale_x_continuous(breaks = c(1, 2), labels = c("Sterilized", "Untreated")) +
-  scale_y_continuous(labels = function(x) paste0(x*100), limits = c(0,1)) +
-  guides(color = guide_legend(title = "Predator Cue")) +
-  scale_color_manual(values = c("yellow3", "orangered4")) +
-  theme(axis.text = element_text(size = 12), axis.title = element_text(size = 12)) +
+# --- build plot ---
+p5 <- ggplot() +
+  # RAW VIOLINS (dodged by predator cue)
   geom_violin(
-    data = raw_points,
-    aes(x = x_num, y = pro_settled, fill = predator_cue, group = interaction(x_num, predator_cue)),
-    position = pd,
-    alpha = 0.3,
-    color = NA,
-    inherit.aes = FALSE
+    data = raw_points5,
+    aes(x = x_num, y = pro_settled, fill = predator_cue,
+        group = interaction(x_num, predator_cue)),
+    position = pd, alpha = 0.3, color = NA
   ) +
-  scale_fill_manual(values = c("yellow3", "orangered4")) +
-  annotate("text", x = 0.94, y = 0.180, label = "A", size = 5) +
-  annotate("text", x = 1.06, y = 0.175, label = "A", size = 5) +
-  annotate("text", x = 1.94, y = 0.60, label = "B", size = 5) +
-  annotate("text", x = 2.06, y = 0.62, label = "B", size = 5)
+  scale_fill_manual(values = c(Absent = "yellow3", Present = "orangered4")) +
+  
+  # MODEL CI BARS + LINES + POINTS (offset; NO dodge)
+  geom_errorbar(
+    data = pred5,
+    aes(x = x_off, ymin = conf.low, ymax = conf.high, color = group),
+    width = 0.06, linewidth = 0.8
+  ) +
+  geom_line(
+    data = pred5,
+    aes(x = x_off, y = predicted, color = group, group = group),
+    linewidth = 1
+  ) +
+  geom_point(
+    data = pred5,
+    aes(x = x_off, y = predicted, color = group),
+    size = 2
+  ) +
+  scale_color_manual(values = c(Absent = "yellow3", Present = "orangered4")) +
+  
+  # axes / labels / theme
+  scale_x_continuous(breaks = c(1, 2), labels = c("Sterilized","Untreated")) +
+  scale_y_continuous(labels = function(y) paste0(y * 100), limits = c(0, 1)) +
+  guides(color = guide_legend(title = "Predator Cue"),
+         fill  = guide_legend(title = "Predator Cue")) +
+  labs(x = "Conspecific Shell", y = "Larvae Settled (%)", title = " ") +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 12))
+
+# (optional) significance letters — use the same ±0.12 offsets
+p5 <- p5 +
+  annotate("text", x = 1 - 0.12, y = 0.180, label = "A", size = 5) +
+  annotate("text", x = 1 + 0.12, y = 0.175, label = "A", size = 5) +
+  annotate("text", x = 2 - 0.12, y = 0.60,  label = "B", size = 5) +
+  annotate("text", x = 2 + 0.12, y = 0.62,  label = "B", size = 5)
+
+# preview
+p5
+
+
 
 ##############################################
 #Same plots for the other cue interactions
 ##Conspecific X Shell
 
-m <- ggpredict(model2, terms = c("Shell", "conspecific_cue"))
-
-# Raw data: numeric x for Shell and tidy factors
-raw_points <- data_raw2 %>%
-  filter(!is.na(Shell), !is.na(conspecific_cue), !is.na(pro_settled)) %>%
+# --- predictions ---
+m6 <- ggpredict(model2, terms = c("Shell","conspecific_cue"))
+pred6 <- as.data.frame(m6) |>
   mutate(
-    x_num = as.numeric(factor(Shell, levels = c("Sterilized","Untreated"))),
-    conspecific_cue = factor(conspecific_cue, levels = c("Absent","Present"))
+    # Shell on x: Sterilized = 1, Untreated = 2
+    x_num = as.integer(factor(as.character(x), levels = c("Sterilized","Untreated"))),
+    group = factor(as.character(group), levels = c("Absent","Present")),  # conspecific cue groups
+    # small left/right offset so groups don't overlap at each x
+    x_off = x_num + ifelse(group == "Absent", -0.12, 0.12)
   )
 
+# --- raw data for violins (dodged) ---
+raw_points6 <- data_raw2 |>
+  filter(!is.na(Shell), !is.na(conspecific_cue), !is.na(pro_settled)) |>
+  mutate(
+    x_num           = as.integer(factor(as.character(Shell), levels = c("Sterilized","Untreated"))),
+    conspecific_cue = factor(as.character(conspecific_cue), levels = c("Absent","Present"))
+  )
+
+# Dodge ONLY for violins
 pd <- position_dodge(width = 0.6)
 
-plot(m) +
-  labs(
-    x = "Conspecific Shell",
-    y = "Larvae Settled (%)",
-    title = " "
-  ) +
-  scale_x_continuous(breaks = c(1, 2), labels = c("Sterilized", "Untreated")) +
-  scale_y_continuous(labels = function(x) paste0(x*100), limits = c(0,1)) +
-  guides(color = guide_legend(title = "Conspecific Cue")) +
-  scale_color_manual(values = c("darkorange2", "dodgerblue3")) +
-  theme(axis.text = element_text(size = 12), axis.title = element_text(size = 12)) +
-  
-  # violins of raw data
+# --- build plot ---
+p6 <- ggplot() +
+  # RAW VIOLINS (dodged by conspecific cue)
   geom_violin(
-    data = raw_points,
+    data = raw_points6,
     aes(x = x_num, y = pro_settled, fill = conspecific_cue,
         group = interaction(x_num, conspecific_cue)),
-    position = pd, alpha = 0.3, color = NA, inherit.aes = FALSE
+    position = pd, alpha = 0.3, color = NA
   ) +
-  scale_fill_manual(values = c("darkorange2", "dodgerblue3")) +
+  scale_fill_manual(values = c(Absent = "darkorange2", Present = "dodgerblue3")) +
   
-  # letters
-  annotate("text", x = 0.94, y = 0.15, label = "A", size = 5) +
-  annotate("text", x = 1.06, y = 0.48, label = "B", size = 5) +
-  annotate("text", x = 1.94, y = 0.57,  label = "C", size = 5) +
-  annotate("text", x = 2.06, y = 0.92,  label = "D", size = 5)
+  # MODEL CI BARS + LINES + POINTS (offset; NO dodge)
+  geom_errorbar(
+    data = pred6,
+    aes(x = x_off, ymin = conf.low, ymax = conf.high, color = group),
+    width = 0.06, linewidth = 0.8
+  ) +
+  geom_line(
+    data = pred6,
+    aes(x = x_off, y = predicted, color = group, group = group),
+    linewidth = 1
+  ) +
+  geom_point(
+    data = pred6,
+    aes(x = x_off, y = predicted, color = group),
+    size = 2
+  ) +
+  scale_color_manual(values = c(Absent = "darkorange2", Present = "dodgerblue3")) +
+  
+  # axes / labels / theme
+  scale_x_continuous(breaks = c(1, 2), labels = c("Sterilized","Untreated")) +
+  scale_y_continuous(labels = function(y) paste0(y * 100), limits = c(0, 1)) +
+  guides(color = guide_legend(title = "Conspecific Cue"),
+         fill  = guide_legend(title = "Conspecific Cue")) +
+  labs(x = "Conspecific Shell", y = "Larvae Settled (%)", title = " ") +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 12))
+
+# (optional) significance letters — use same ±0.12 offsets if per-group
+p6 <- p6 +
+  annotate("text", x = 1 - 0.12, y = 0.15, label = "A", size = 5) +
+  annotate("text", x = 1 + 0.12, y = 0.48, label = "B", size = 5) +
+  annotate("text", x = 2 - 0.12, y = 0.57, label = "C", size = 5) +
+  annotate("text", x = 2 + 0.12, y = 0.92, label = "D", size = 5)
+
+# preview
+p6
+
 
 ##############################################
 #Same plots for the other cue interactions
 ##Conspecific cue X biofilm
 
-# Predictions: conspecific_cue × biofilm
-m <- ggpredict(model2, terms = c("conspecific_cue", "biofilm"))
-
-# Raw data: numeric x for conspecific_cue and tidy factors
-raw_points <- data_raw2 %>%
-  filter(!is.na(conspecific_cue), !is.na(biofilm), !is.na(pro_settled)) %>%
+# --- predictions ---
+m7 <- ggpredict(model2, terms = c("conspecific_cue","biofilm"))
+pred7 <- as.data.frame(m7) |>
   mutate(
-    x_num       = as.numeric(factor(conspecific_cue, levels = c("Absent","Present"))),
-    biofilm     = factor(biofilm, levels = c("Absent","Present"))
+    # Conspecific cue on x: Absent = 1, Present = 2
+    x_num = as.integer(factor(as.character(x), levels = c("Absent","Present"))),
+    group = factor(as.character(group), levels = c("Absent","Present")),  # biofilm groups
+    # small left/right offset so groups don't overlap at each x
+    x_off = x_num + ifelse(group == "Absent", -0.12, 0.12)
   )
 
+# --- raw data for violins (dodged) ---
+raw_points7 <- data_raw2 |>
+  filter(!is.na(conspecific_cue), !is.na(biofilm), !is.na(pro_settled)) |>
+  mutate(
+    x_num   = as.integer(factor(as.character(conspecific_cue), levels = c("Absent","Present"))),
+    biofilm = factor(as.character(biofilm), levels = c("Absent","Present"))
+  )
+
+# Dodge ONLY for violins
 pd <- position_dodge(width = 0.6)
 
-plot(m) +
-  labs(
-    x = "Conspecific Cue (waterborne)",
-    y = "Larvae Settled (%)",
-    title = " "
-  ) +
-  scale_x_continuous(breaks = c(1, 2), labels = c("Absent", "Present")) +
-  scale_y_continuous(labels = function(x) paste0(x*100), limits = c(0,1)) +
-  guides(color = guide_legend(title = "Biofilm")) +
-  # Colors for Biofilm groups
-  scale_color_manual(values = c("darkslateblue", "darkgreen")) +
-  theme(axis.text = element_text(size = 12), axis.title = element_text(size = 12)) +
-  
-  # Overlay raw data as violins, grouped & filled by Biofilm
+# --- build plot ---
+p7 <- ggplot() +
+  # RAW VIOLINS (dodged by biofilm)
   geom_violin(
-    data = raw_points,
-    aes(x = x_num, y = pro_settled, fill = biofilm, group = interaction(x_num, biofilm)),
-    position = pd, alpha = 0.3, color = NA, inherit.aes = FALSE
+    data = raw_points7,
+    aes(x = x_num, y = pro_settled, fill = biofilm,
+        group = interaction(x_num, biofilm)),
+    position = pd, alpha = 0.3, color = NA
   ) +
-  scale_fill_manual(values = c("darkslateblue", "darkgreen")) +
+  scale_fill_manual(values = c(Absent = "darkslateblue", Present = "darkgreen")) +
   
-  # Letters (adjust y if needed)
-  annotate("text", x = 0.94, y = 0.17, label = "A",  size = 5) +
-  annotate("text", x = 1.06, y = 0.32, label = "B",  size = 5) +
-  annotate("text", x = 1.94, y = 0.45,  label = "C",  size = 5) +
-  annotate("text", x = 2.06, y = 0.63,  label = "D",  size = 5)
+  # MODEL CI BARS + LINES + POINTS (offset; NO dodge)
+  geom_errorbar(
+    data = pred7,
+    aes(x = x_off, ymin = conf.low, ymax = conf.high, color = group),
+    width = 0.06, linewidth = 0.8
+  ) +
+  geom_line(
+    data = pred7,
+    aes(x = x_off, y = predicted, color = group, group = group),
+    linewidth = 1
+  ) +
+  geom_point(
+    data = pred7,
+    aes(x = x_off, y = predicted, color = group),
+    size = 2
+  ) +
+  scale_color_manual(values = c(Absent = "darkslateblue", Present = "darkgreen")) +
+  
+  # axes / labels / theme
+  scale_x_continuous(breaks = c(1, 2), labels = c("Absent","Present")) +
+  scale_y_continuous(labels = function(y) paste0(y * 100), limits = c(0, 1)) +
+  guides(color = guide_legend(title = "Biofilm"),
+         fill  = guide_legend(title = "Biofilm")) +
+  labs(x = "Conspecific Cue (waterborne)", y = "Larvae Settled (%)", title = " ") +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 12))
+
+# significance letters — use the same ±0.12 offsets if per-group
+p7 <- p7 +
+  annotate("text", x = 1 - 0.12, y = 0.17, label = "A", size = 5) +
+  annotate("text", x = 1 + 0.12, y = 0.32, label = "B", size = 5) +
+  annotate("text", x = 2 - 0.12, y = 0.45, label = "C", size = 5) +
+  annotate("text", x = 2 + 0.12, y = 0.63, label = "D", size = 5)
+
+# preview
+p7
 
 
 ##############################################
@@ -668,94 +891,178 @@ plot(m) +
 ##Shell X biofilm
 
 
-# Predictions: Shell × biofilm
-m <- ggpredict(model2, terms = c("Shell", "biofilm"))
-
-# Raw data: numeric x for Shell and tidy factors
-raw_points <- data_raw2 %>%
-  filter(!is.na(Shell), !is.na(biofilm), !is.na(pro_settled)) %>%
+# --- predictions ---
+m8 <- ggpredict(model2, terms = c("Shell","biofilm"))
+pred8 <- as.data.frame(m8) |>
   mutate(
-    x_num   = as.numeric(factor(Shell, levels = c("Sterilized","Untreated"))),
-    biofilm = factor(biofilm, levels = c("Absent","Present"))
+    # Shell on x: Sterilized = 1, Untreated = 2
+    x_num = as.integer(factor(as.character(x), levels = c("Sterilized","Untreated"))),
+    group = factor(as.character(group), levels = c("Absent","Present")),  # biofilm groups
+    # small left/right offset so groups don't overlap at each x
+    x_off = x_num + ifelse(group == "Absent", -0.12, 0.12)
   )
 
+# --- raw data for violins (dodged) ---
+raw_points8 <- data_raw2 |>
+  filter(!is.na(Shell), !is.na(biofilm), !is.na(pro_settled)) |>
+  mutate(
+    x_num   = as.integer(factor(as.character(Shell), levels = c("Sterilized","Untreated"))),
+    biofilm = factor(as.character(biofilm), levels = c("Absent","Present"))
+  )
+
+# Dodge ONLY for violins
 pd <- position_dodge(width = 0.6)
 
-plot(m) +
-  labs(
-    x = "Conspecific Shell",
-    y = "Larvae Settled (%)",
-    title = " "
-  ) +
-  scale_x_continuous(breaks = c(1, 2), labels = c("Sterilized", "Untreated")) +
-  scale_y_continuous(labels = function(x) paste0(x*100), limits = c(0,1)) +
-  guides(color = guide_legend(title = "Biofilm")) +
-  # Colors for Biofilm groups
-  scale_color_manual(values = c("darkslateblue", "darkgreen")) +
-  theme(axis.text = element_text(size = 12), axis.title = element_text(size = 12)) +
-  
-  # Overlay raw data as violins, grouped & filled by Biofilm
+# --- build plot ---
+p8 <- ggplot() +
+  # RAW VIOLINS (dodged by biofilm)
   geom_violin(
-    data = raw_points,
-    aes(x = x_num, y = pro_settled, fill = biofilm, group = interaction(x_num, biofilm)),
-    position = pd, alpha = 0.3, color = NA, inherit.aes = FALSE
+    data = raw_points8,
+    aes(x = x_num, y = pro_settled, fill = biofilm,
+        group = interaction(x_num, biofilm)),
+    position = pd, alpha = 0.3, color = NA
   ) +
-  scale_fill_manual(values = c("darkslateblue", "darkgreen")) +
+  scale_fill_manual(values = c(Absent = "darkslateblue", Present = "darkgreen")) +
   
-  # Letters (adjust y values if needed)
-  annotate("text", x = 0.94, y = 0.16, label = "A",  size = 5) +
-  annotate("text", x = 1.06, y = 0.32, label = "B",  size = 5) +
-  annotate("text", x = 1.94, y = 0.57, label = "C",  size = 5) +
-  annotate("text", x = 2.06, y = 0.75, label = "D",  size = 5)
+  # MODEL CI BARS + LINES + POINTS (offset; NO dodge)
+  geom_errorbar(
+    data = pred8,
+    aes(x = x_off, ymin = conf.low, ymax = conf.high, color = group),
+    width = 0.06, linewidth = 0.8
+  ) +
+  geom_line(
+    data = pred8,
+    aes(x = x_off, y = predicted, color = group, group = group),
+    linewidth = 1
+  ) +
+  geom_point(
+    data = pred8,
+    aes(x = x_off, y = predicted, color = group),
+    size = 2
+  ) +
+  scale_color_manual(values = c(Absent = "darkslateblue", Present = "darkgreen")) +
+  
+  # axes / labels / theme
+  scale_x_continuous(breaks = c(1, 2), labels = c("Sterilized","Untreated")) +
+  scale_y_continuous(labels = function(y) paste0(y * 100), limits = c(0, 1)) +
+  guides(color = guide_legend(title = "Biofilm"),
+         fill  = guide_legend(title = "Biofilm")) +
+  labs(x = "Conspecific Shell", y = "Larvae Settled (%)", title = " ") +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 12))
+
+# (optional) significance letters — use the same ±0.12 offsets if per-group
+p8 <- p8 +
+  annotate("text", x = 1 - 0.12, y = 0.16, label = "A", size = 5) +
+  annotate("text", x = 1 + 0.12, y = 0.32, label = "B", size = 5) +
+  annotate("text", x = 2 - 0.12, y = 0.57, label = "C", size = 5) +
+  annotate("text", x = 2 + 0.12, y = 0.75, label = "D", size = 5)
+
+# preview
+p8
 
 
 ##############################################
 #Same plots for the other cue interactions
 ##Predator X biofilm
+library(ggeffects)
+library(dplyr)
+library(ggplot2)
 
-
-# Predictions: predator_cue × biofilm
-m <- ggpredict(model2, terms = c("predator_cue", "biofilm"))
-
-# Raw data: numeric x for predator_cue and tidy factors
-raw_points <- data_raw2 %>%
-  filter(!is.na(predator_cue), !is.na(biofilm), !is.na(pro_settled)) %>%
+# --- predictions ---
+m9 <- ggpredict(model2, terms = c("predator_cue","biofilm"))
+pred9 <- as.data.frame(m9) |>
   mutate(
-    x_num   = as.numeric(factor(predator_cue, levels = c("Absent","Present"))),
-    biofilm = factor(biofilm, levels = c("Absent","Present"))
+    # Predator cue on x: Absent = 1, Present = 2
+    x_num = as.integer(factor(as.character(x), levels = c("Absent","Present"))),
+    group = factor(as.character(group), levels = c("Absent","Present")),  # biofilm groups
+    # small left/right offset so groups don't overlap at each x
+    x_off = x_num + ifelse(group == "Absent", -0.12, 0.12)
   )
 
+# --- raw data for violins (dodged) ---
+raw_points9 <- data_raw2 |>
+  filter(!is.na(predator_cue), !is.na(biofilm), !is.na(pro_settled)) |>
+  mutate(
+    x_num   = as.integer(factor(as.character(predator_cue), levels = c("Absent","Present"))),
+    biofilm = factor(as.character(biofilm), levels = c("Absent","Present"))
+  )
+
+# Dodge ONLY for violins
 pd <- position_dodge(width = 0.6)
 
-plot(m) +
-  labs(
-    x = "Predator Cue",
-    y = "Larvae Settled (%)",
-    title = " "
-  ) +
-  scale_x_continuous(breaks = c(1, 2), labels = c("Absent", "Present")) +
-  scale_y_continuous(labels = function(x) paste0(x*100), limits = c(0,1)) +
-  guides(color = guide_legend(title = "Biofilm")) +
-  # Colors for Biofilm groups
-  scale_color_manual(values = c("darkslateblue", "darkgreen")) +
-  theme(axis.text = element_text(size = 12), axis.title = element_text(size = 12)) +
-  
-  # Overlay raw data as violins, grouped & filled by Biofilm
+# --- build plot ---
+p9 <- ggplot() +
+  # RAW VIOLINS (dodged by biofilm)
   geom_violin(
-    data = raw_points,
-    aes(x = x_num, y = pro_settled, fill = biofilm, group = interaction(x_num, biofilm)),
-    position = pd, alpha = 0.3, color = NA, inherit.aes = FALSE
+    data = raw_points9,
+    aes(x = x_num, y = pro_settled, fill = biofilm,
+        group = interaction(x_num, biofilm)),
+    position = pd, alpha = 0.3, color = NA
   ) +
-  scale_fill_manual(values = c("darkslateblue", "darkgreen")) +
+  scale_fill_manual(values = c(Absent = "darkslateblue", Present = "darkgreen")) +
   
-  # add prediction lines
-  geom_line(aes(group = group, color = group), linewidth = 1, position = pd) +
-  geom_point(aes(color = group), size = 2, position = pd) +
-  # Letters 
-  annotate("text", x = 0.94, y = 0.16, label = "A",  size = 5) +
-  annotate("text", x = 1.06, y = 0.32, label = "B",  size = 5) +
-  annotate("text", x = 1.94, y = 0.16,  label = "C",  size = 5) +
-  annotate("text", x = 2.06, y = 0.34,  label = "D",  size = 5)
+  # MODEL CI BARS + LINES + POINTS (offset; NO dodge)
+  geom_errorbar(
+    data = pred9,
+    aes(x = x_off, ymin = conf.low, ymax = conf.high, color = group),
+    width = 0.06, linewidth = 0.8
+  ) +
+  geom_line(
+    data = pred9,
+    aes(x = x_off, y = predicted, color = group, group = group),
+    linewidth = 1
+  ) +
+  geom_point(
+    data = pred9,
+    aes(x = x_off, y = predicted, color = group),
+    size = 2
+  ) +
+  scale_color_manual(values = c(Absent = "darkslateblue", Present = "darkgreen")) +
+  
+  # axes / labels / theme
+  scale_x_continuous(breaks = c(1, 2), labels = c("Absent","Present")) +
+  scale_y_continuous(labels = function(y) paste0(y * 100), limits = c(0, 1)) +
+  guides(color = guide_legend(title = "Biofilm"),
+         fill  = guide_legend(title = "Biofilm")) +
+  labs(x = "Predator Cue", y = "Larvae Settled (%)", title = " ") +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 12))+
+# significance letters — use the same ±0.12 offsets if per-group
+p9 <- p9 +
+  annotate("text", x = 1 - 0.12, y = 0.16, label = "B", size = 5) +
+  annotate("text", x = 1 + 0.12, y = 0.32, label = "A", size = 5) +
+  annotate("text", x = 2 - 0.12, y = 0.16, label = "B", size = 5) +
+  annotate("text", x = 2 + 0.12, y = 0.34, label = "A", size = 5)
+
+# preview
+p9
+
+#######################
+##combined figure######
+combined <- (p4 | p5 | p6) /
+  (p7 | p8 | p9)
+
+# Show it
+combined
 
 
 
+
+
+
+
+
+
+
+
+
+#######
+
+theme(
+  legend.title = element_text(size = 8),  # smaller legend titlehttp://127.0.0.1:19300/graphics/1d1b51a2-36c4-4fad-bb68-b351d869e42f.png
+  legend.text  = element_text(size = 8),   # smaller legend labels
+  legend.key.size = unit(0.5, "cm"),        # smaller boxes/keys
+  legend.margin = margin(t = 0, r = 0, b = 0, l = 0),         # tighten inside spacing
+  legend.box.margin = margin(t = -5, r = 0, b = 0, l = 0)     # move legend closer to plot
+)
